@@ -1,0 +1,145 @@
+# sci-skills
+
+[English](#english) | [中文](#中文)
+
+A Claude Code plugin with skills for scientific work: find papers, read one paper into a graph of its arguments, and join a set of papers into one graph along their citations.
+
+### Skills
+
+| Skill | What it does | How it starts |
+|---|---|---|
+| `find-papers` | Builds a ranked reading list on a topic from NASA ADS | Claude picks it up when you ask for papers on a topic |
+| `read-a-paper` | Breaks one paper down into an Argument DAG, written as an Obsidian canvas | Claude picks it up when you ask for a detailed breakdown of a paper |
+| `build-argument-library` | Reads a set of papers and joins their Argument DAGs along the citations between them into one Obsidian canvas | Only when you call `/sci-skills:build-argument-library` |
+
+#### find-papers
+
+Ask for something like *"find 10–15 papers on tidal tails, starting from a few that Pavel Kroupa co-authored"*. Claude searches ADS for seed papers that match your constraints (topic, author, year), expands from them with the ADS `similar` and `useful` operators, then reads the abstracts to rank and trim the list.
+
+- The reply is a table of title, authors, year, bibcode, and how each paper was found.
+- Every paper in the list comes from ADS in that session. Nothing is added from memory.
+- It is read-only: it writes no files and downloads no full texts.
+
+#### read-a-paper
+
+Give Claude a paper and ask it to explain the paper in detail. It reads the paper with the Toulmin model of argumentation: each argument is recorded as a Claim with its Grounds and Warrant, plus Backing, Qualifier and Rebuttal where the paper gives them. The arguments are linked bottom-up, from the ones that rest only on outside knowledge to the paper's main conclusions.
+
+The result is an Obsidian canvas:
+
+- One card per argument, with a `Source:` line saying where in the paper it comes from and a `Cites:` line for each publication it rests on.
+- One identity card with the paper's title, authors, year and identifier.
+- Edges labelled `Grounds`, `Warrant`, `Backing` or `Rebuttal`, saying how one argument's Claim is used by the next.
+- Audit Notes on cards where the logic has a problem: a circular dependency, or an argument that leads to none of the paper's conclusions.
+
+#### build-argument-library
+
+Call `/sci-skills:build-argument-library` and tell Claude which papers to use and where their full texts are. Each paper is read by its own subagent with `read-a-paper`. Claude then follows the citations between the papers: where an argument in paper A cites paper B, it finds the argument in B that A relies on and links the two.
+
+The result is one Obsidian canvas, rebuilt whole on every run:
+
+- Each paper is a group holding its full Argument DAG. A paper sits above the papers it cites.
+- Links between papers are purple edges with the same four labels.
+- Audit Notes (red cards) mark citations that do not hold up: the cited paper has no argument that makes the Claim, or the citing paper states it more strongly than the cited paper argued.
+- Links come from citations only. Papers the set cites but does not contain are counted in the reply as candidates for extending the set.
+
+A typical path through the three skills: use `find-papers` to get a reading list, obtain the full texts yourself, then run `build-argument-library` on them.
+
+### Glossary
+
+`GLOSSARY.md` defines the terms the skills share (Toulmin model, Argument DAG, Native Argument, End Argument, Argument Library). The plugin's hooks load it into every session and every subagent.
+
+### Install
+
+In Claude Code:
+
+```
+/plugin marketplace add HerculeWu/sci-skills
+/plugin install sci-skills@sci-skills
+```
+
+### Requirements
+
+- Node 18 or later, for the scripts.
+- `jq`, used by the hook that loads the glossary into subagents.
+- An ADS API token in `~/.ads/dev_key`, for `find-papers`. Get one from your [ADS account settings](https://ui.adsabs.harvard.edu/user/settings/token).
+- [Obsidian](https://obsidian.md), to open the `.canvas` files.
+
+### Development
+
+`AGENTS.md` holds the principles the skills are built on. The scripts have unit tests:
+
+```bash
+node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-library/scripts/library.test.mjs
+```
+
+## 中文
+
+一个 Claude Code 插件，提供科研用的 skill：查找论文，把一篇论文读成论证图，再把一组论文按引用关系连成一张图。
+
+### Skills
+
+| Skill | 功能 | 触发方式 |
+|---|---|---|
+| `find-papers` | 通过 NASA ADS 按主题整理出一份排好序的阅读清单 | 你让 Claude 找某个主题的论文时，它会自己调用 |
+| `read-a-paper` | 把一篇论文拆解成 Argument DAG，写成 Obsidian canvas | 你让 Claude 详细讲解一篇论文时，它会自己调用 |
+| `build-argument-library` | 读一组论文，把各篇的 Argument DAG 按彼此的引用关系连成一张 Obsidian canvas | 只在你调用 `/sci-skills:build-argument-library` 时运行 |
+
+#### find-papers
+
+你可以这样提问：*“找 10–15 篇关于 tidal tails 的论文，从 Pavel Kroupa 参与的几篇出发”*。Claude 先在 ADS 里按你的条件（主题、作者、年份）搜出种子论文，再用 ADS 的 `similar` 和 `useful` 从种子扩展，最后读摘要来排序和筛选。
+
+- 回复是一张表：标题、作者、年份、bibcode，以及每篇论文是怎么找到的。
+- 清单里的每一篇都来自当次会话的 ADS 查询结果，不会凭记忆添加。
+- 它是只读的：不写文件，也不下载全文。
+
+#### read-a-paper
+
+给 Claude 一篇论文，让它详细讲解。它用 Toulmin 论证模型来读：每个论证记为一个 Claim 加上它的 Grounds 和 Warrant，论文给出时再加上 Backing、Qualifier 和 Rebuttal。论证自底向上相连，从只依赖外部知识的论证一直连到论文的主要结论。
+
+结果是一张 Obsidian canvas：
+
+- 每个论证一张卡片，带一行 `Source:` 说明它出自论文哪里，它依赖的每篇文献各有一行 `Cites:`。
+- 一张身份卡片，写着论文的标题、作者、年份和标识符。
+- 边的标签是 `Grounds`、`Warrant`、`Backing` 或 `Rebuttal`，说明一个论证的 Claim 在下一个论证里起什么作用。
+- 逻辑有问题的卡片带 Audit Note：循环依赖，或者某个论证通不到论文的任何结论。
+
+#### build-argument-library
+
+调用 `/sci-skills:build-argument-library`，告诉 Claude 用哪些论文、全文在哪里。每篇论文由一个单独的 subagent 用 `read-a-paper` 来读。然后 Claude 顺着论文之间的引用走：论文 A 的某个论证引用了论文 B，它就在 B 里找到 A 所依赖的那个论证，把两者连起来。
+
+结果是一张 Obsidian canvas，每次运行都整张重新生成：
+
+- 每篇论文是一个 group，里面是它完整的 Argument DAG。引用别人的论文排在被引论文的上方。
+- 论文之间的连接是紫色的边，标签同样是那四种。
+- Audit Note（红色卡片）标出站不住的引用：被引论文里没有提出这个 Claim 的论证，或者引用方说得比被引论文论证的更强。
+- 连接只来自引用。这组论文引用了、但不在这组里的论文，会在回复里统计出来，作为扩充文献库的候选。
+
+三个 skill 的典型用法：先用 `find-papers` 得到阅读清单，自己取得全文，再对它们运行 `build-argument-library`。
+
+### 词表
+
+`GLOSSARY.md` 定义了各个 skill 共用的术语（Toulmin model、Argument DAG、Native Argument、End Argument、Argument Library）。插件的 hook 会把它加载到每个会话和每个 subagent 里。
+
+### 安装
+
+在 Claude Code 里：
+
+```
+/plugin marketplace add HerculeWu/sci-skills
+/plugin install sci-skills@sci-skills
+```
+
+### 依赖
+
+- Node 18 或更高版本，用来运行脚本。
+- `jq`，把词表加载到 subagent 的 hook 要用。
+- `find-papers` 需要一个 ADS API token，放在 `~/.ads/dev_key`。可以在 [ADS 账号设置](https://ui.adsabs.harvard.edu/user/settings/token)里获取。
+- [Obsidian](https://obsidian.md)，用来打开 `.canvas` 文件。
+
+### 开发
+
+`AGENTS.md` 记录了构建这些 skill 的原则。脚本带有单元测试：
+
+```bash
+node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-library/scripts/library.test.mjs
+```
