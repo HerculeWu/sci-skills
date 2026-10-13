@@ -6,21 +6,9 @@ description: Read and understand a paper, and write its argument structure as an
 Break down a research paper into a network of interconnected arguments using the **Toulmin Model of Argumentation** as a foundation. By formalizing text into a Directed Acyclic Graph (DAG) structure --- **Argument DAG**, you can bypass rhetorical filler and directly see a paper's logical integrity
 
 ## Languages
-- **Toulmin model of argumentation**: The Toulmin Model of Argumentation is a structured framework for analyzing and building thoroughly reasoned arguments. In Toulmin model, an argument consists of up to six elements:
-  - **Claim**: The conclusion or statement that the author wants the reader to accept.
-  - **Grounds**: The evidence, facts, or inputs that support the Claim.
-  - **Warrant**: The underlying logic, rule, or principle that explains why the Grounds legitimately lead to the Claim.
-  - **Backing**: Additional evidence or credentials used to prove that the Warrant itself is reliable and valid.
-  - **Qualifier**: Words or constraints that limit the scope or certainty of the Claim (e.g., "under high pressure conditions," "typically").
-  - **Rebuttal**: Acknowledged exceptions or conditions under which the Claim becomes invalid.
-- **Argument DAG**: When arguments connect to each other, we can treat each argument as a node on a DAG. For example, the Claim outputted by Argument A might serve as the Grounds or the Warrant for Argument B. 
-- **Native Argument**: A Native Argument is a foundational argument whose validity does not rely on any calculations, experiments, or proofs generated within the current paper. Its Grounds, Warrants, or Backings consist entirely of external elements: peer-reviewed citations, established baseline datasets, mathematical ansatzes, laws of physics, or standard domain knowledge.
-- **End Argument**: An End Argument is a destination argument representing the ultimate objective of the paper. It delivers the primary contributions, novel frameworks, or definitive conclusions promised in the abstract or introduction. No other arguments inside the paper depend on it. Once you reach the End Arguments, the structural purpose of the paper is fulfilled.
+Terms in bold are defined in the sci-skills glossary, loaded at session start. If it is not in your context, read `${CLAUDE_PLUGIN_ROOT}/GLOSSARY.md` first.
 
-## Notes of Languages
-- An argument cannot stand without Claim, Grounds and Warrant. To adapt to practical situations and address counterarguments, Backing, Qualifier and Rebuttal are added.
-- Every argument you record has a Claim, Grounds and a Warrant. When the paper leaves the Warrant unstated, write the one you infer and mark it `(implicit)`.
-- Native Argument and End Argument are special type of an Argument. An End Argument can not serve as Grounds, Warrant, Backing or Rebuttal of any other Argument.
+Every argument you record has a Claim, Grounds and a Warrant. When the paper leaves the Warrant unstated, write the one you infer and mark it `(implicit)`.
 
 ## Step-by-Step Prescription for Argument DAG Construction
 Follow this sequence to read the paper and map its structural logic from the bottom up.

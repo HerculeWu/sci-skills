@@ -1,0 +1,25 @@
+{
+  "description": "Load GLOSSARY.md into every session and every subagent. SubagentStart ignores plain stdout, so that hook wraps the file in JSON.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat \"${CLAUDE_PLUGIN_ROOT}/GLOSSARY.md\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -Rs '{hookSpecificOutput: {hookEventName: \"SubagentStart\", additionalContext: .}}' \"${CLAUDE_PLUGIN_ROOT}/GLOSSARY.md\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}

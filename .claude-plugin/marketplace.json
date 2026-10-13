@@ -1,0 +1,14 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "sci-skills",
+  "description": "Local marketplace for the sci-skills plugin (skills for scientific work).",
+  "owner": { "name": "HerculeWu" },
+  "plugins": [
+    {
+      "name": "sci-skills",
+      "description": "Skills for scientific work: find papers through NASA ADS, read a paper into an argument graph.",
+      "category": "science",
+      "source": "./"
+    }
+  ]
+}

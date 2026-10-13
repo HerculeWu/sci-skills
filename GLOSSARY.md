@@ -1,11 +1,22 @@
+# Sci-skills glossary
+The vocabulary of the sci-skills plugin. These meanings apply when working with its skills; elsewhere the words keep their ordinary sense.
+
 ## Language
-**Ansatz**: An ansatz is the establishment of the starting equation(s), the theorem(s), the value(s)， or any assumption(s) describing a mathematical or physical problem or solution.
-**Generalized Ansatz**: A generalized ansatz is a claim together with its test and whether it was made before or after seeing the evidence. A test is how a claim is checked: by observation, simulation, derivation, argument, or by citing a published result.
+### Argumentation
+- **Toulmin model of argumentation**: The Toulmin Model of Argumentation is a structured framework for analyzing and building thoroughly reasoned arguments. In Toulmin model, an argument consists of up to six elements:
+  - **Claim**: The conclusion or statement that the author wants the reader to accept.
+  - **Grounds**: The evidence, facts, or inputs that support the Claim.
+  - **Warrant**: The underlying logic, rule, or principle that explains why the Grounds legitimately lead to the Claim.
+  - **Backing**: Additional evidence or credentials used to prove that the Warrant itself is reliable and valid.
+  - **Qualifier**: Words or constraints that limit the scope or certainty of the Claim (e.g., "under high pressure conditions," "typically").
+  - **Rebuttal**: Acknowledged exceptions or conditions under which the Claim becomes invalid.
+- **Argument DAG**: When arguments connect to each other, we can treat each argument as a node on a DAG. For example, the Claim outputted by Argument A might serve as the Grounds or the Warrant for Argument B.
+- **Native Argument**: A Native Argument is a foundational argument whose validity does not rely on any calculations, experiments, or proofs generated within the current paper. Its Grounds, Warrants, or Backings consist entirely of external elements: peer-reviewed citations, established baseline datasets, mathematical ansatzes, laws of physics, or standard domain knowledge.
+- **End Argument**: An End Argument is a destination argument representing the ultimate objective of the paper. It delivers the primary contributions, novel frameworks, or definitive conclusions promised in the abstract or introduction. No other arguments inside the paper depend on it. Once you reach the End Arguments, the structural purpose of the paper is fulfilled.
 
 ## Relationships
-- A **generalized ansatz** can be reformated as an **Ansatz**
-- An **Ansatz** can be an assumption of another **Ansatz**
+- An argument cannot stand without Claim, Grounds and Warrant. To adapt to practical situations and address counterarguments, Backing, Qualifier and Rebuttal are added.
+- Native Argument and End Argument are special type of an Argument. An End Argument can not serve as Grounds, Warrant, Backing or Rebuttal of any other Argument.
 
 ## Flagged ambiguities
-- **Generalized ansatz** has no fixed language pattern.
-- **Generalized ansatz** and **Ansatz** are direct guess, not a derivative.
+- **Claim**, **Grounds**, **Warrant**, **Backing**, **Qualifier** and **Rebuttal** are common English words. They name a Toulmin element only when capitalized.
