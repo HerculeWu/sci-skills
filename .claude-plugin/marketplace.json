@@ -6,7 +6,7 @@
   "plugins": [
     {
       "name": "sci-skills",
-      "description": "Skills for scientific work: find papers through NASA ADS, read a paper into an argument graph.",
+      "description": "Skills for scientific work: find papers through NASA ADS, read a paper into an argument graph, join a set of papers into an argument library.",
       "category": "science",
       "source": "./"
     }

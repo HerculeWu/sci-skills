@@ -4,6 +4,7 @@ The scope of this repo is to provid usefull skills for scientific works. Treat t
 ## Skills
 - `find-papers`:  Find published papers on a topic through NASA ADS. This is also a scaffolding for build a test library.
 - `read-a-paper`: Read and understand a paper, and write its argument structure as an Obsidian canvas.
+- `build-argument-library`: Read a set of papers with subagents using `read-a-paper`, and join their argument structures along the citations between them into one Obsidian canvas.
 
 ## Glossary
 `GLOSSARY.md` holds the vocabulary shared by the skills. The plugin's hooks (`hooks/hooks.json`) load it into every session and every subagent, so a skill can use its terms without explaining them.
