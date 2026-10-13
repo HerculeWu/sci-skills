@@ -1,0 +1,60 @@
+{
+ "_legend": {
+  "S": "setup card: design of the paper's own simulations, no run output in Grounds",
+  "SD": "setup card whose Grounds also hold run output (setup and first result merged)",
+  "D": "Grounds hold output of the paper's own simulations (figure/table/number from the runs, incl. model-vs-data comparison)",
+  "X": "Grounds are observational data selected/graded by means of the simulation; no simulation output shown in Grounds",
+  "R": "Grounds only restate Claims of upstream simulation-based cards",
+  "O": "no simulation output in Grounds (observation, analytic derivation, literature)"
+ },
+ "Gieles2021": {
+  "labels": {
+   "A_setup":"S","A_targets":"O",
+   "A_wbh1":"D","B_nobh1":"D","A_fbh":"D","A_stream":"D","A_mech":"D","A_crit":"D","A_corr":"D","D_rate":"D",
+   "B_sigma":"D","B_tune":"D","B_time":"D","B_mf":"D","T_lens":"D","T_bin":"D","T_scal":"D","P_pop":"D",
+   "C_fav":"R","E_pal5":"R","E_streams":"R","E_gcmf":"R","E_test":"R"}
+ },
+ "Weis2025": {
+  "labels": {
+   "obs-sample":"O","obs-centre":"O","orbit":"O","sim-suite":"SD",
+   "seed-scatter":"D","mass-loss":"D","fit-pdmf":"D","fit-profile":"D","fit-segregation":"D","bfsr-match":"D",
+   "tail-extent":"D","tail-robust":"D","tail-asymmetry":"D","tail-clumps":"D","dl-direct":"D","step-spacing":"D",
+   "torque-decomp":"D","slow-encounters":"D","dl-general":"D","rg-shift":"D","field-stars":"D",
+   "end-model":"R","end-tail-structure":"R","end-sky-prediction":"D","end-selfgravity":"R","end-tail-shift":"R"}
+ },
+ "Wirth2024": {
+  "labels": {
+   "a-models":"S","a-tails":"O","a-mobs":"O","a-convex":"O","a-mf-methods":"O",
+   "a-binary-mass":"D","a-fmul":"D","a-sigma":"D","a-mf-flatter":"D","a-dyn-mass":"D","a-phot-mass":"D",
+   "a-fmul-sigma":"D","a-cross-model":"D","a-dalpha-fmul":"D",
+   "e-mass":"R","e-mf":"R","e-field":"R"}
+ },
+ "PflammAltenburg2025": {
+  "labels": {
+   "a-efe":"O","a-hermite-mld":"O","a-setup":"S","a-softrole":"R","a-efe-pred":"O",
+   "a-binary-iso":"D","a-binary-ext":"D","a-triple":"D","a-plummer":"D","a-compare2014":"D",
+   "a-snapshots":"D","a-epsilon":"D","a-q":"D","a-evap":"D",
+   "a-asymmetry":"R","e-generic":"R","e-test":"R","e-dissolution":"R","e-conservation":"R","e-limits":"R"},
+  "campaign": {
+   "a-binary-iso":"tests","a-binary-ext":"tests","a-triple":"tests","a-plummer":"tests","a-compare2014":"tests",
+   "a-snapshots":"twins","a-epsilon":"twins","a-q":"twins","a-evap":"twins"}
+ },
+ "Jerabkova2021": {
+  "labels": {
+   "i-m1-model":"SD","i-gaia-observables":"D","i-potential-comparison":"D","i-rotation":"D","i-lump-sims":"D",
+   "i-not-clustered":"D","i-galcyl-compact":"D","i-cp-insufficient":"D","i-lambda-relation":"D","i-ccp-method":"D",
+   "i-epicyclic-model":"D","i-candidate-sample":"X","i-asymmetry":"X","i-spin-periods":"X",
+   "i-overdensities-detected":"D","i-rv-camd-check":"D","i-roeser-crossmatch":"D",
+   "e-modelling-needed":"R","e-full-extent":"R","e-epicyclic-candidates":"D","e-potential-constraint":"R",
+   "e-rotation-constraint":"R","e-lump-asymmetry":"R"}
+ },
+ "Jadhav2025": {
+  "labels": {
+   "n_sim":"S",
+   "s_morph":"D","s_population":"D","s_mf":"D","s_ecc":"D","s_metric":"D","s_sshape":"D","s_dynamics":"D","s_escape":"D",
+   "s_avgmass":"D","s_span":"D","s_density":"D","s_types":"D","s_selection":"D","t_features":"D","t_apply":"D",
+   "s_mass":"R","t_tests":"R","t_match":"R",
+   "o_sample":"O","g_grades":"X","o_age_met":"X","o_stats":"X","o_bf":"X",
+   "e_baseline":"R","e_reliable":"R","e_consistent":"R","e_asym":"R","e_methods":"R","e_rv_phi":"D"}
+ }
+}
