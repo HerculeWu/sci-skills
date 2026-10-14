@@ -17,11 +17,13 @@ import { checkCanvas, InvalidInput, LABELS, loadLibrary, readJson, UsageError } 
 
 // Obsidian canvas colour preset 2 (orange) marks a costly Verification
 const COSTLY_COLOR = "2";
-const RESULT_LABEL = new RegExp(`^(成立|不成立) → (${LABELS.join("|")})$`);
+const RESULT_LABEL = new RegExp(`^(holds|fails) → (${LABELS.join("|")})$`);
 // a library card named on a card: `<paper key>:<card id>`, keys as library.mjs allows them
 const CARD_REF = /`([A-Za-z0-9._-]+):([^`\s]+)`/g;
-const SHALLOW = "浅";
+const SHALLOW = "shallow";
 const EXCEPTION = "⚠";
+const HOLDS = "If it holds";
+const FAILS = "If it fails";
 
 export const USAGE = `usage:
   proposal.mjs check <round-N.canvas> <library.canvas>  check a proposal canvas against its Argument Library
@@ -41,7 +43,7 @@ export function tags(card) {
   return heading.replace(/^#+\s*/, "").split("·").slice(1).map((t) => t.trim());
 }
 
-const twoSided = (card) => (card.text ?? "").includes("若成立") && (card.text ?? "").includes("若不成立");
+const twoSided = (card) => (card.text ?? "").includes(HOLDS) && (card.text ?? "").includes(FAILS);
 
 /** Problems of a proposal canvas checked against the library canvas; empty when it passes. */
 export function checkProposal(proposal, library) {
@@ -61,7 +63,7 @@ export function checkProposal(proposal, library) {
   const edges = proposal.edges ?? [];
   for (const [i, edge] of edges.entries()) {
     if (LABELS.includes(edge.label) || RESULT_LABEL.test(edge.label ?? "")) continue;
-    problems.push(`edge ${q(edge.id ?? i)}: label ${q(edge.label ?? "")} is none of ${LABELS.join(", ")}, 成立 → <label>, 不成立 → <label>`);
+    problems.push(`edge ${q(edge.id ?? i)}: label ${q(edge.label ?? "")} is none of ${LABELS.join(", ")}, holds → <label>, fails → <label>`);
   }
 
   const byId = new Map(proposal.nodes.map((n) => [n.id, n]));
@@ -71,7 +73,7 @@ export function checkProposal(proposal, library) {
     const excepted = conjectures.some((c) => tags(c).some((t) => t.startsWith(EXCEPTION)));
     if (shallow || excepted) continue;
     problems.push(
-      `costly Verification ${q(verification.id)}: grounds no Conjecture tagged ${SHALLOW} with both 若成立 and 若不成立, and none tagged ${EXCEPTION}`,
+      `costly Verification ${q(verification.id)}: grounds no Conjecture tagged ${SHALLOW} with both "${HOLDS}" and "${FAILS}", and none tagged ${EXCEPTION}`,
     );
   }
   return problems;

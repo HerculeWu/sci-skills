@@ -30,23 +30,23 @@ function library() {
   };
 }
 
-const SHALLOW_TWO_SIDED = "## C1 · Conjecture（V1）· 浅 · 基准\n**Claim**：…\n**若成立** → Backing\n**若不成立** → 先查设置";
+const SHALLOW_TWO_SIDED = "## C1 · Conjecture (V1) · shallow · benchmark\n**Claim**: …\n**If it holds** → Backing\n**If it fails** → check the setup first";
 
 /** A proposal in the shape of round-1-B: library card, costly Verification, its shallow Conjecture, the goal. */
 function proposal() {
   return {
     nodes: [
-      card("L_gieles", "`Gieles2021:A_setup` · 中间论证\n两组逐星模型"),
-      card("V1", "## V1 · Verification · **昂贵**\n**标尺**：σ_seed（`Weis2025:seed-scatter`）", "2"),
+      card("L_gieles", "`Gieles2021:A_setup` · intermediate\ntwo star-by-star models"),
+      card("V1", "## V1 · Verification · costly\n**Yardstick**: σ_seed (`Weis2025:seed-scatter`)", "2"),
       card("C1", SHALLOW_TWO_SIDED, "3"),
-      card("G", "# 目标 · 第 1 轮", "5"),
+      card("G", "# Goal · round 1", "5"),
     ],
     edges: [
       edge("e1", "L_gieles", "V1", "Backing"),
       edge("e2", "V1", "C1", "Grounds"),
-      edge("e3", "C1", "V1", "成立 → Backing", "3"),
+      edge("e3", "C1", "V1", "holds → Backing", "3"),
       edge("e4", "L_gieles", "G", "Rebuttal", "1"),
-      edge("e5", "C1", "G", "不成立 → Grounds", "3"),
+      edge("e5", "C1", "G", "fails → Grounds", "3"),
     ],
   };
 }
@@ -76,7 +76,7 @@ test("checkProposal stops at a canvas Obsidian cannot open", () => {
 });
 
 test("cardRefs finds backticked paper:card references and leaves URLs and plain code alone", () => {
-  const text = "依据 `Gieles2021:A_setup` 和 `Weis2025:seed-scatter`；见 `https://example.org`、`sims/project.yaml`、`K`";
+  const text = "from `Gieles2021:A_setup` and `Weis2025:seed-scatter`; see `https://example.org`, `sims/project.yaml`, `K`";
   assert.deepEqual(cardRefs(text), [
     { paper: "Gieles2021", id: "Gieles2021:A_setup" },
     { paper: "Weis2025", id: "Weis2025:seed-scatter" },
@@ -86,7 +86,7 @@ test("cardRefs finds backticked paper:card references and leaves URLs and plain 
 
 test("checkProposal names every card reference missing from the library", () => {
   const p = proposal();
-  node(p, "C1").text += "\n**Warrant**：`Gieles2021:A_setp`";
+  node(p, "C1").text += "\n**Warrant**: `Gieles2021:A_setp`";
   node(p, "G").text += "\n`Kroupa2022:e-main`";
   assert.deepEqual(checkProposal(p, library()), [
     'card "C1": names "Gieles2021:A_setp", which is not a card of the library',
@@ -96,30 +96,30 @@ test("checkProposal names every card reference missing from the library", () => 
 
 test("checkProposal accepts only the four labels and the two result labels", () => {
   const p = proposal();
-  p.edges.push(edge("e6", "C1", "G", "Supports"), edge("e7", "C1", "G", "成立 → Support"), edge("e8", "C1", "G"));
+  p.edges.push(edge("e6", "C1", "G", "Supports"), edge("e7", "C1", "G", "holds → Support"), edge("e8", "C1", "G"));
   const problems = checkProposal(p, library());
   assert.deepEqual(
     problems.map((s) => s.split(":")[0]),
     ['edge "e6"', 'edge "e7"', 'edge "e8"'],
   );
-  assert.match(problems[0], /label "Supports" is none of Grounds, Warrant, Backing, Rebuttal, 成立 → <label>, 不成立 → <label>/);
+  assert.match(problems[0], /label "Supports" is none of Grounds, Warrant, Backing, Rebuttal, holds → <label>, fails → <label>/);
 });
 
 test("tags reads the ·-separated parts of the heading", () => {
-  assert.deepEqual(tags(card("C1", SHALLOW_TWO_SIDED)), ["Conjecture（V1）", "浅", "基准"]);
-  assert.deepEqual(tags(card("C4", "\n## C4 · Conjecture（V1）· ⚠ 不浅\n…")), ["Conjecture（V1）", "⚠ 不浅"]);
+  assert.deepEqual(tags(card("C1", SHALLOW_TWO_SIDED)), ["Conjecture (V1)", "shallow", "benchmark"]);
+  assert.deepEqual(tags(card("C4", "\n## C4 · Conjecture (V1) · ⚠ not shallow\n…")), ["Conjecture (V1)", "⚠ not shallow"]);
   assert.deepEqual(tags(card("x", "")), []);
 });
 
 test("a costly Verification needs a shallow Conjecture with both outcomes", () => {
-  const expected = ['costly Verification "V1": grounds no Conjecture tagged 浅 with both 若成立 and 若不成立, and none tagged ⚠'];
+  const expected = ['costly Verification "V1": grounds no Conjecture tagged shallow with both "If it holds" and "If it fails", and none tagged ⚠'];
 
   const notShallow = proposal();
-  node(notShallow, "C1").text = SHALLOW_TWO_SIDED.replace("· 浅 ", "");
+  node(notShallow, "C1").text = SHALLOW_TWO_SIDED.replace("· shallow ", "");
   assert.deepEqual(checkProposal(notShallow, library()), expected);
 
   const oneSided = proposal();
-  node(oneSided, "C1").text = SHALLOW_TWO_SIDED.replace(/\n\*\*若不成立\*\*.*/, "");
+  node(oneSided, "C1").text = SHALLOW_TWO_SIDED.replace(/\n\*\*If it fails\*\*.*/, "");
   assert.deepEqual(checkProposal(oneSided, library()), expected);
 
   const unhung = proposal();
@@ -127,20 +127,20 @@ test("a costly Verification needs a shallow Conjecture with both outcomes", () =
   assert.deepEqual(checkProposal(unhung, library()), expected, "a Conjecture hangs on a Verification through Grounds");
 
   const notAShallowTag = proposal();
-  node(notAShallowTag, "C1").text = SHALLOW_TWO_SIDED.replace("· 浅 ", "· 不浅 ");
+  node(notAShallowTag, "C1").text = SHALLOW_TWO_SIDED.replace("· shallow ", "· not shallow ");
   assert.deepEqual(checkProposal(notAShallowTag, library()), expected);
 });
 
 test("a costly Verification passes with a Conjecture marked ⚠ as the exception", () => {
   const p = proposal();
-  node(p, "C1").text = "## C1 · Conjecture（V1）· ⚠ 不浅\n**例外**：要等 C0 的结果\n**若成立** → …";
+  node(p, "C1").text = "## C1 · Conjecture (V1) · ⚠ not shallow\n**Exception**: needs the outcome of C0\n**If it holds** → …";
   node(p, "C1").color = "1";
   assert.deepEqual(checkProposal(p, library()), []);
 });
 
 test("cheap Verifications and outlook cards carry no shallow requirement", () => {
   const p = proposal();
-  p.nodes.push(card("V0", "## V0 · Verification · 便宜", "3"), card("O3", "## O3 · 展望 · 昂贵 Verification V2", "6"));
+  p.nodes.push(card("V0", "## V0 · Verification · cheap", "3"), card("O3", "## O3 · Outlook · costly Verification V2 (no commitment)", "6"));
   assert.deepEqual(checkProposal(p, library()), []);
 });
 
