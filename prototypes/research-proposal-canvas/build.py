@@ -352,9 +352,9 @@ def layout_a():
     note = node("note", 0, -900)
     nodes += [goal, note]
     groups = [
-        group("z_est", "已站稳的：library 卡片 · proposal 自己的论证 · Verification 的设计", zone_est),
-        group("z_round", "这一轮：Conjecture", rnd),
-        group("z_out", "展望（非承诺）", out, OUTLOOK),
+        group("z_est", "Established: library cards · the proposal's own arguments · Verification designs", zone_est),
+        group("z_round", "This round: Conjectures", rnd),
+        group("z_out", "Outlook (no commitment)", out, OUTLOOK),
     ]
     return groups + nodes
 
