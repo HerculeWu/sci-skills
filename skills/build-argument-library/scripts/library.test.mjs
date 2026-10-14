@@ -5,7 +5,7 @@ import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { checkCanvas, checkLinkList, components, InvalidInput, merge, rankPapers, run } from "./library.mjs";
+import { cardContent, checkCanvas, checkLinkList, components, dependents, InvalidInput, merge, rankPapers, run } from "./library.mjs";
 
 function card(id, x = 0, y = 0, text = `## Claim\n${id}`) {
   return { id, type: "text", x, y, width: 400, height: 300, text };
@@ -45,6 +45,12 @@ function runWith(argv) {
 test("checkCanvas accepts a canvas with an identity card and sound edges", () => {
   assert.deepEqual(checkCanvas(paperCanvas()), []);
   assert.deepEqual(checkCanvas({ nodes: [card("paper")] }), []);
+});
+
+test("checkCanvas without identity accepts a canvas that is not one paper's", () => {
+  assert.deepEqual(checkCanvas({ nodes: [card("a:n1")] }, { identity: false }), []);
+  const dangling = checkCanvas({ nodes: [card("a")], edges: [edge("x1", "a", "gone")] }, { identity: false });
+  assert.deepEqual(dangling, ['edge "x1": toNode "gone" is not a card']);
 });
 
 test("checkCanvas reports every problem", () => {
@@ -247,8 +253,74 @@ test("run check passes sound canvases and names the broken ones", () => {
   assert.equal(result.stderr, `error: ${bad}: no identity card (a card with id "paper")\n`);
 });
 
+/** A library canvas of papers a and b, where b's `n1` cites a's End Argument. */
+function libraryCanvas() {
+  const { list, canvases } = library(["a", "b"], [link("a:e1", "b:n1", "Backing")]);
+  return merge(list, canvases).canvas;
+}
+
+test("dependents follows edges across papers, nearest first", () => {
+  assert.deepEqual(dependents(libraryCanvas(), "a:n1"), [
+    { id: "a:e1", depth: 1, label: "Grounds", via: "a:n1" },
+    { id: "b:n1", depth: 2, label: "Backing", via: "a:e1" },
+    { id: "b:e1", depth: 3, label: "Grounds", via: "b:n1" },
+  ]);
+  assert.deepEqual(dependents(libraryCanvas(), "b:e1"), []);
+});
+
+test("dependents lists a card reached twice once, at its smallest depth", () => {
+  const canvas = { nodes: ["r", "m", "t"].map((id) => card(id)), edges: [edge("1", "r", "m"), edge("2", "m", "t"), edge("3", "r", "t", "Warrant")] };
+  assert.deepEqual(dependents(canvas, "r"), [
+    { id: "m", depth: 1, label: "Grounds", via: "r" },
+    { id: "t", depth: 1, label: "Warrant", via: "r" },
+  ]);
+  canvas.edges.push(edge("4", "t", "r"));
+  assert.equal(dependents(canvas, "r").length, 2, "a cycle ends the walk");
+});
+
+test("cardContent names what a non-text card shows", () => {
+  assert.equal(cardContent(card("n1")), "## Claim\nn1");
+  assert.equal(cardContent({ id: "f", type: "file", file: "fig.png" }), "(file card: fig.png)");
+  assert.equal(cardContent({ id: "g", type: "group", label: "A" }), "(group card: A)");
+});
+
+function writeLibrary() {
+  const path = join(mkdtempSync(join(tmpdir(), "library-test-")), "library.canvas");
+  writeFileSync(path, JSON.stringify(libraryCanvas()));
+  return path;
+}
+
+test("run card prints one card of the library", () => {
+  const path = writeLibrary();
+  assert.deepEqual(runWith(["card", path, "b:n1"]), { code: 0, stdout: "## Claim\nn1\n", stderr: "" });
+  const missing = runWith(["card", path, "b:gone"]);
+  assert.equal(missing.code, 1);
+  assert.equal(missing.stderr, `error: ${path}: no card "b:gone"\n`);
+});
+
+test("run uses lists every dependent card, and says when there is none", () => {
+  const path = writeLibrary();
+  assert.deepEqual(runWith(["uses", path, "a:e1"]), {
+    code: 0,
+    stdout: "1 b:n1 (Backing of a:e1)\n2 b:e1 (Grounds of b:n1)\n",
+    stderr: "",
+  });
+  assert.equal(runWith(["uses", path, "b:e1"]).stdout, "no card uses b:e1\n");
+  assert.equal(runWith(["uses", path, "b:gone"]).code, 1);
+});
+
+test("run card reports a library that cannot be read", () => {
+  const dir = mkdtempSync(join(tmpdir(), "library-test-"));
+  const broken = join(dir, "broken.canvas");
+  writeFileSync(broken, JSON.stringify({ nodes: [card("a:n1")], edges: [edge("x", "a:n1", "a:gone")] }));
+  const result = runWith(["card", broken, "a:n1"]);
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /toNode "a:gone" is not a card/);
+  assert.match(runWith(["uses", join(dir, "none.canvas"), "a:n1"]).stderr, /cannot read \(ENOENT\)/);
+});
+
 test("run rejects wrong invocations with the usage", () => {
-  for (const argv of [[], ["explore"], ["check"], ["merge", "only-one"]]) {
+  for (const argv of [[], ["explore"], ["check"], ["merge", "only-one"], ["card", "lib.canvas"], ["uses", "lib.canvas", "a:n1", "b:n1"]]) {
     assert.equal(runWith(argv).code, 2, JSON.stringify(argv));
   }
   assert.match(runWith(["merge", "only-one"]).stderr, /usage:/);

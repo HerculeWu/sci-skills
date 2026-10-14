@@ -47,3 +47,14 @@ Writes the library canvas, replacing any file at that path. It is rebuilt whole 
 - A circular dependency that the links close is not broken: every card on it gets an Audit Note, and the script prints a `cycle across papers:` line with the cards.
 
 On success it prints one `wrote ...` line with the counts.
+
+## card and uses
+Two read-only lookups into a finished library canvas, for skills that work from it:
+
+```bash
+node <skill-dir>/scripts/library.mjs card <library.canvas> <paper:card>
+node <skill-dir>/scripts/library.mjs uses <library.canvas> <paper:card>
+```
+
+- `card` prints the card's text, Audit Notes included.
+- `uses` lists every card in the library that depends on it, directly or through other cards, nearest first, one line each: `<depth> <card> (<label> of <the card it uses>)`.

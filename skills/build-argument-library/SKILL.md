@@ -33,7 +33,7 @@ These Audit Notes belong to the library canvas only, through the link list. A pa
 A citation of a paper outside the set gets no card and no link. Count these citations for the reply. A paper that was left out counts as outside the set.
 
 ## Writing the library canvas
-Record the papers, links and Audit Notes in a link list and let `scripts/library.mjs` write the canvas from it. [merging.md](merging.md) has the format and what the script produces.
+Record the papers, links and Audit Notes in a link list and let `scripts/library.mjs` write the canvas from it. [merging.md](merging.md) has the format and what the script produces. Write the Audit Notes in English, like the canvases they sit on, whatever language the conversation is in: other skills read the library back.
 
 ## Reply
 Tell the user where the library canvas is, then report:

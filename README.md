@@ -2,7 +2,7 @@
 
 [English](#english) | [中文](#中文)
 
-A Claude Code plugin with skills for scientific work: find papers, read one paper into a graph of its arguments, and join a set of papers into one graph along their citations.
+A Claude Code plugin with skills for scientific work: find papers, read one paper into a graph of its arguments, join a set of papers into one graph along their citations, and draw a research proposal from that graph.
 
 ### Skills
 
@@ -11,6 +11,7 @@ A Claude Code plugin with skills for scientific work: find papers, read one pape
 | `find-papers` | Builds a ranked reading list on a topic from NASA ADS | Claude picks it up when you ask for papers on a topic |
 | `read-a-paper` | Breaks one paper down into an Argument DAG, written as an Obsidian canvas | Claude picks it up when you ask for a detailed breakdown of a paper |
 | `build-argument-library` | Reads a set of papers and joins their Argument DAGs along the citations between them into one Obsidian canvas | Only when you call `/sci-skills:build-argument-library` |
+| `research-proposal` | Turns a vague research idea into a proposal drawn from an Argument Library: one layer of Conjectures, each with the Verification that would decide it, as an Obsidian canvas | Only when you call `/sci-skills:research-proposal` |
 
 #### find-papers
 
@@ -42,11 +43,30 @@ The result is one Obsidian canvas, rebuilt whole on every run:
 - Audit Notes (red cards) mark citations that do not hold up: the cited paper has no argument that makes the Claim, or the citing paper states it more strongly than the cited paper argued.
 - Links come from citations only. Papers the set cites but does not contain are counted in the reply as candidates for extending the set.
 
-A typical path through the three skills: use `find-papers` to get a reading list, obtain the full texts yourself, then run `build-argument-library` on them.
+#### research-proposal
+
+Call `/sci-skills:research-proposal` with a vague idea that names a goal (a question), an object of study (a class of objects is enough) and at least one lever: something you want to change, compare, explain or measure. Claude works from an Argument Library you built with `build-argument-library`, and from nothing outside it: the library is the set of papers you chose to trust.
+
+A run stops for you at most three times:
+
+- the first time it uses a library, before writing a Short for each paper (a one-page summary, written once and reused), with the cost;
+- to agree on what the idea means, with its readings set side by side and the number of papers it would open;
+- to let you choose which Verifications to commit to, grouped by what each would move and what it needs.
+
+In between, one subagent per relevant paper reads the paper against the idea and reports where it stands on each element: established, assumed, disputed or silent, with card ids.
+
+The result goes under `proposals/<name>/`:
+
+- `round-N.canvas`: one layer of Conjectures on top of the library. Each Conjecture has a decidable Claim and hangs on the Verification that would decide it. Every costly Verification carries at least one shallow Conjecture that says what holding and failing would each establish. Choices the library does not support are left for you to decide.
+- `table.md`: a comparison table of papers against the idea's elements, with the papers opened and the candidates laid out, kept across rounds.
+
+The skill only proposes: it runs no simulation and queries no database. After you have done the work, call it again with the outcomes for the next round. A new canvas is written each round; whether a Conjecture held is yours to say.
+
+A typical path through the skills: use `find-papers` to get a reading list, obtain the full texts yourself, run `build-argument-library` on them, then `research-proposal` with your idea.
 
 ### Glossary
 
-`GLOSSARY.md` defines the terms the skills share (Toulmin model, Argument DAG, Native Argument, End Argument, Argument Library). The plugin's hooks load it into every session and every subagent.
+`GLOSSARY.md` defines the terms the skills share (Toulmin model, Argument DAG, Native Argument, End Argument, Argument Library, Conjecture, Verification, Short). The plugin's hooks load it into every session and every subagent.
 
 ### Install
 
@@ -63,18 +83,19 @@ In Claude Code:
 - `jq`, used by the hook that loads the glossary into subagents.
 - An ADS API token in `~/.ads/dev_key`, for `find-papers`. Get one from your [ADS account settings](https://ui.adsabs.harvard.edu/user/settings/token).
 - [Obsidian](https://obsidian.md), to open the `.canvas` files.
+- For `research-proposal`: an Argument Library built by `build-argument-library`, ideally with the papers' full texts next to it.
 
 ### Development
 
 `AGENTS.md` holds the principles the skills are built on. The scripts have unit tests:
 
 ```bash
-node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-library/scripts/library.test.mjs
+node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-library/scripts/library.test.mjs skills/research-proposal/scripts/proposal.test.mjs
 ```
 
 ## 中文
 
-一个 Claude Code 插件，提供科研用的 skill：查找论文，把一篇论文读成论证图，再把一组论文按引用关系连成一张图。
+一个 Claude Code 插件，提供科研用的 skill：查找论文，把一篇论文读成论证图，把一组论文按引用关系连成一张图，再从这张图出发写研究提案。
 
 ### Skills
 
@@ -83,6 +104,7 @@ node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-librar
 | `find-papers` | 通过 NASA ADS 按主题整理出一份排好序的阅读清单 | 你让 Claude 找某个主题的论文时，它会自己调用 |
 | `read-a-paper` | 把一篇论文拆解成 Argument DAG，写成 Obsidian canvas | 你让 Claude 详细讲解一篇论文时，它会自己调用 |
 | `build-argument-library` | 读一组论文，把各篇的 Argument DAG 按彼此的引用关系连成一张 Obsidian canvas | 只在你调用 `/sci-skills:build-argument-library` 时运行 |
+| `research-proposal` | 从 Argument Library 出发，把一个模糊的研究想法写成提案：一层 Conjecture，每个挂在能判定它的 Verification 上，写成 Obsidian canvas | 只在你调用 `/sci-skills:research-proposal` 时运行 |
 
 #### find-papers
 
@@ -114,11 +136,30 @@ node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-librar
 - Audit Note（红色卡片）标出站不住的引用：被引论文里没有提出这个 Claim 的论证，或者引用方说得比被引论文论证的更强。
 - 连接只来自引用。这组论文引用了、但不在这组里的论文，会在回复里统计出来，作为扩充文献库的候选。
 
-三个 skill 的典型用法：先用 `find-papers` 得到阅读清单，自己取得全文，再对它们运行 `build-argument-library`。
+#### research-proposal
+
+调用 `/sci-skills:research-proposal`，给出一个模糊的想法，其中要有目标（一个问题）、研究对象（给一类对象就够）和至少一个抓手：你想改变、比较、解释或测量的东西。Claude 只从你用 `build-argument-library` 建好的 Argument Library 出发，不查 library 之外的文献：library 就是你选定可信的那组论文。
+
+一次运行最多停下来问你三次：
+
+- 第一次用到某个 library 时，在给每篇论文写 Short（一页摘要，写一次、反复用）之前，告诉你开销；
+- 对齐想法的意思：几种读法并排列出，并说明大约要打开几篇论文；
+- 让你挑这一轮投入哪几组 Verification，每组写明牵动什么、需要什么。
+
+中间每篇相关论文由一个 subagent 带着想法去读，报告它对每个要素的态度：已确立、被假定、有争议还是没说，并给出卡片 id。
+
+结果放在 `proposals/<短名>/` 下：
+
+- `round-N.canvas`：在 library 之上加一层 Conjecture。每个 Conjecture 的 Claim 都可判定，并挂在能判定它的 Verification 上。每次昂贵的 Verification 至少挂一个浅的 Conjecture，写明成立、不成立各得出什么。library 不支撑的选择留给你决定。
+- `table.md`：对照表，论文 × 想法的要素，记下打开了哪些论文、摆出过哪些候选，跨轮保留。
+
+这个 skill 只提案：不跑模拟，不查数据库。你做完之后带着结果再调用它，进入下一轮。每轮写一张新 canvas；Conjecture 成立与否由你来说。
+
+几个 skill 的典型用法：先用 `find-papers` 得到阅读清单，自己取得全文，对它们运行 `build-argument-library`，再带着你的想法运行 `research-proposal`。
 
 ### 词表
 
-`GLOSSARY.md` 定义了各个 skill 共用的术语（Toulmin model、Argument DAG、Native Argument、End Argument、Argument Library）。插件的 hook 会把它加载到每个会话和每个 subagent 里。
+`GLOSSARY.md` 定义了各个 skill 共用的术语（Toulmin model、Argument DAG、Native Argument、End Argument、Argument Library、Conjecture、Verification、Short）。插件的 hook 会把它加载到每个会话和每个 subagent 里。
 
 ### 安装
 
@@ -135,11 +176,12 @@ node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-librar
 - `jq`，把词表加载到 subagent 的 hook 要用。
 - `find-papers` 需要一个 ADS API token，放在 `~/.ads/dev_key`。可以在 [ADS 账号设置](https://ui.adsabs.harvard.edu/user/settings/token)里获取。
 - [Obsidian](https://obsidian.md)，用来打开 `.canvas` 文件。
+- `research-proposal` 需要一个由 `build-argument-library` 建好的 Argument Library，最好全文也放在旁边。
 
 ### 开发
 
 `AGENTS.md` 记录了构建这些 skill 的原则。脚本带有单元测试：
 
 ```bash
-node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-library/scripts/library.test.mjs
+node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-library/scripts/library.test.mjs skills/research-proposal/scripts/proposal.test.mjs
 ```

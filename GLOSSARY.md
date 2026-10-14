@@ -14,10 +14,15 @@ The vocabulary of the sci-skills plugin. These meanings apply when working with 
 - **Native Argument**: A Native Argument is a foundational argument whose validity does not rely on any calculations, experiments, or proofs generated within the current paper. Its Grounds, Warrants, or Backings consist entirely of external elements: peer-reviewed citations, established baseline datasets, mathematical ansatzes, laws of physics, or standard domain knowledge.
 - **End Argument**: An End Argument is a destination argument representing the ultimate objective of the paper. It delivers the primary contributions, novel frameworks, or definitive conclusions promised in the abstract or introduction. No other arguments inside the paper depend on it. Once you reach the End Arguments, the structural purpose of the paper is fulfilled.
 - **Argument Library**: The Argument DAGs of a set of papers joined into one graph along the citations between them. Where an argument of one paper cites another paper of the set, the cited paper's argument feeds it as Grounds, Warrant, Backing or Rebuttal.
+- **Conjecture**: An argument whose Grounds do not exist yet; they are to be produced by a Verification. Its Claim is decidable: it names a quantity, what it is compared with, and the direction, so the outcome can only confirm or refute it. Its Rebuttal states in advance which result refutes it.
+- **Verification**: The work that produces the Grounds of one or more Conjectures, such as a simulation, a measurement or a plot of existing data. It is costly when it needs a commitment from the user (an allocation, new data, days of work) and cheap when it can be run and rerun with what is at hand.
+- **Short**: An idea-independent summary of one paper of an Argument Library (object, kind of work, data and methods including tools used or cited, quantities, End Arguments), used to decide which papers to read in full.
 
 ## Relationships
 - An argument cannot stand without Claim, Grounds and Warrant. To adapt to practical situations and address counterarguments, Backing, Qualifier and Rebuttal are added.
 - Native Argument and End Argument are special type of an Argument. An End Argument can not serve as Grounds, Warrant, Backing or Rebuttal of any other Argument in the same paper; in an Argument Library it can serve an argument of another paper.
+- In a proposal, Native Argument is relative to the proposal: an argument whose support comes entirely from the Argument Library or cited works.
+- One Verification can ground several Conjectures. A refuted Conjecture establishes its opposite, which other arguments can use.
 
 ## Flagged ambiguities
 - **Claim**, **Grounds**, **Warrant**, **Backing**, **Qualifier** and **Rebuttal** are common English words. They name a Toulmin element only when capitalized.

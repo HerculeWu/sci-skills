@@ -4,19 +4,22 @@
  *
  *   node library.mjs check <paper.canvas>...
  *   node library.mjs merge <link-list.json> <library.canvas>
+ *   node library.mjs card <library.canvas> <paper:card>
+ *   node library.mjs uses <library.canvas> <paper:card>
  *
  * `check` validates per-paper canvases written by read-a-paper. `merge` joins
  * them into one library canvas: a group per paper, the cross-paper edges of
  * the link list, and its Audit Notes appended to the cards they name. Which
  * citation links to which argument is the agent's judgement and arrives in the
- * link list; nothing here decides it.
+ * link list; nothing here decides it. `card` and `uses` only read a library
+ * canvas: one card, and every card that depends on it.
  */
 
 import { readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const LABELS = ["Grounds", "Warrant", "Backing", "Rebuttal"];
+export const LABELS = ["Grounds", "Warrant", "Backing", "Rebuttal"];
 const IDENTITY_ID = "paper";
 // a key becomes an id prefix, so it must not contain the ":" separator
 const KEY = /^[A-Za-z0-9._-]+$/;
@@ -30,6 +33,8 @@ const LINK_COLOR = "6";
 export const USAGE = `usage:
   library.mjs check <paper.canvas>...                  validate per-paper canvases
   library.mjs merge <link-list.json> <library.canvas>  write the library canvas (overwrites it)
+  library.mjs card <library.canvas> <paper:card>       print one card of the library
+  library.mjs uses <library.canvas> <paper:card>       list every card that depends on it, directly or not
 
 canvas paths in the link list are relative to the link list's directory.
 errors go to stderr with a non-zero exit; merge writes nothing unless every input is valid.`;
@@ -48,8 +53,11 @@ export class InvalidInput extends Error {
 const isObject = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
 const q = (v) => JSON.stringify(v);
 
-/** Problems that would break merging or leave the paper unidentifiable; empty when the canvas is usable. */
-export function checkCanvas(canvas) {
+/**
+ * Problems that would break merging or leave the paper unidentifiable; empty when the canvas is usable.
+ * `identity: false` drops the identity card requirement, for a canvas that is not one paper's.
+ */
+export function checkCanvas(canvas, { identity = true } = {}) {
   if (!isObject(canvas) || !Array.isArray(canvas.nodes)) return ["no `nodes` array"];
   const problems = [];
   const ids = new Set();
@@ -64,7 +72,7 @@ export function checkCanvas(canvas) {
       if (!Number.isFinite(node[field])) problems.push(`node ${q(node.id)} has no numeric ${field}`);
     }
   }
-  if (!ids.has(IDENTITY_ID)) problems.push(`no identity card (a card with id ${q(IDENTITY_ID)})`);
+  if (identity && !ids.has(IDENTITY_ID)) problems.push(`no identity card (a card with id ${q(IDENTITY_ID)})`);
   const edges = canvas.edges ?? [];
   if (!Array.isArray(edges)) return [...problems, "`edges` is not an array"];
   for (const [i, edge] of edges.entries()) {
@@ -297,7 +305,46 @@ export function merge(list, canvases) {
   return { canvas: { nodes: [...groups, ...cards.values()], edges }, cycles };
 }
 
-function readJson(path) {
+/** What `card` prints: a text card's text, or a line naming what another kind of card shows. */
+export function cardContent(card) {
+  if (card.type === "text") return card.text ?? "";
+  if (card.type === "file") return `(file card: ${card.file})`;
+  if (card.type === "link") return `(link card: ${card.url})`;
+  return `(${card.type} card${card.label ? `: ${card.label}` : ""})`;
+}
+
+/**
+ * Every card that depends on `id`, directly or through other cards, following
+ * edges from the Claim that is used to the argument that uses it. Breadth-first:
+ * a card at `depth` 1 uses `id` itself; `via` is the card it uses, through an
+ * edge labelled `label`.
+ */
+export function dependents(canvas, id) {
+  const out = new Map();
+  for (const edge of canvas.edges ?? []) {
+    if (!out.has(edge.fromNode)) out.set(edge.fromNode, []);
+    out.get(edge.fromNode).push(edge);
+  }
+  const found = [];
+  const seen = new Set([id]);
+  let frontier = [id];
+  for (let depth = 1; frontier.length > 0; depth++) {
+    const next = [];
+    for (const via of frontier) {
+      const edges = [...(out.get(via) ?? [])].sort((a, b) => a.toNode.localeCompare(b.toNode));
+      for (const edge of edges) {
+        if (seen.has(edge.toNode)) continue;
+        seen.add(edge.toNode);
+        found.push({ id: edge.toNode, depth, label: edge.label ?? "(no label)", via });
+        next.push(edge.toNode);
+      }
+    }
+    frontier = next;
+  }
+  return found;
+}
+
+export function readJson(path) {
   let text;
   try {
     text = readFileSync(path, "utf-8");
@@ -317,6 +364,35 @@ function loadCanvas(path) {
   const problems = checkCanvas(canvas);
   if (problems.length > 0) throw new InvalidInput(problems.map((p) => `${path}: ${p}`));
   return canvas;
+}
+
+/** Parse a library canvas; throws with every problem that would make its cards unreadable. */
+export function loadLibrary(path) {
+  const canvas = readJson(path);
+  const problems = checkCanvas(canvas, { identity: false });
+  if (problems.length > 0) throw new InvalidInput(problems.map((p) => `${path}: ${p}`));
+  return canvas;
+}
+
+function libraryCard(args, command) {
+  if (args.length !== 2) throw new UsageError(`${command} takes a library canvas and a card id`);
+  const [path, id] = args;
+  const canvas = loadLibrary(path);
+  const card = canvas.nodes.find((n) => n.id === id);
+  if (!card) throw new InvalidInput([`${path}: no card ${q(id)}`]);
+  return { canvas, card };
+}
+
+function runCard(args, out) {
+  const { card } = libraryCard(args, "card");
+  out(`${cardContent(card)}\n`);
+}
+
+function runUses(args, out) {
+  const { canvas, card } = libraryCard(args, "uses");
+  const found = dependents(canvas, card.id);
+  if (found.length === 0) out(`no card uses ${card.id}\n`);
+  for (const d of found) out(`${d.depth} ${d.id} (${d.label} of ${d.via})\n`);
 }
 
 function runCheck(paths, out) {
@@ -372,6 +448,8 @@ export function run(argv, io = {}) {
   try {
     if (command === "check") runCheck(rest, out);
     else if (command === "merge") runMerge(rest, out);
+    else if (command === "card") runCard(rest, out);
+    else if (command === "uses") runUses(rest, out);
     else throw new UsageError(`unknown command: ${command}`);
     return 0;
   } catch (e) {
