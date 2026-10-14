@@ -32,6 +32,8 @@ The project's own docs (`AGENTS.md`, README and the files they point to) say wha
 - `<library dir>/shorts/<paper key>.md`: one **Short** per paper of the library. Format: [short.md](short.md).
 - A reply, below.
 
+Every file is written in English, whatever language the conversation is in, because later rounds and subagents read these files back. What the user said goes on the goal card in English too. Brief every subagent in English and ask for its report in English. Only the reply is in the user's language.
+
 ## What the proposal stands on
 - **The work ends at the canvas.** Reading the project and the library is all the legwork this skill does; simulations, builds and ADS queries belong to the rounds the user runs after it.
 - **The library is the literature.** The user chose which papers to trust. What the library lacks is either not done or not published, and neither changes the proposal. So every card on the canvas comes from the library or is the proposal's own, and "new" means "not in the library".

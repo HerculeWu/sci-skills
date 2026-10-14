@@ -1,5 +1,5 @@
 # Canvas output
-The Argument DAG is delivered as an Obsidian canvas, a `.canvas` file that the user opens in Obsidian.
+The Argument DAG is delivered as an Obsidian canvas, a `.canvas` file that the user opens in Obsidian. Write it in English, whatever language the conversation is in: other skills read it back as part of an Argument Library.
 
 ## Cards
 - One identity card with the id `paper`: the paper's title, authors and year, and the DOI or arXiv identifier printed on it. It is how this canvas is recognised when another paper's canvas cites this paper.
