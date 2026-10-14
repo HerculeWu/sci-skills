@@ -16,6 +16,7 @@ The vocabulary of the sci-skills plugin. These meanings apply when working with 
 - **Argument Library**: The Argument DAGs of a set of papers joined into one graph along the citations between them. Where an argument of one paper cites another paper of the set, the cited paper's argument feeds it as Grounds, Warrant, Backing or Rebuttal.
 - **Conjecture**: An argument whose Grounds do not exist yet; they are to be produced by a Verification. Its Claim is decidable: it names a quantity, what it is compared with, and the direction, so the outcome can only confirm or refute it. Its Rebuttal states in advance which result refutes it.
 - **Verification**: The work that produces the Grounds of one or more Conjectures, such as a simulation, a measurement or a plot of existing data. It is costly when it needs a commitment from the user (an allocation, new data, days of work) and cheap when it can be run and rerun with what is at hand.
+- **Round**: One cycle of research on one goal: a proposal of Conjectures with the Verifications chosen to decide them, the work that produces their Grounds, and the user's judgement of each Conjecture as held, failed or not done. The next round starts from those judgements; earlier rounds stay as they are.
 - **Short**: An idea-independent summary of one paper of an Argument Library (object, kind of work, data and methods including tools used or cited, quantities, End Arguments), used to decide which papers to read in full.
 
 ## Relationships

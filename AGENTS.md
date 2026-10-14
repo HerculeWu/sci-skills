@@ -6,6 +6,7 @@ The scope of this repo is to provid usefull skills for scientific works. Treat t
 - `read-a-paper`: Read and understand a paper, and write its argument structure as an Obsidian canvas.
 - `build-argument-library`: Read a set of papers with subagents using `read-a-paper`, and join their argument structures along the citations between them into one Obsidian canvas.
 - `research-proposal`: Turn a vague research idea into a proposal drawn from an Argument Library: one layer of Conjectures, each hung on the Verification that would decide it, as an Obsidian canvas.
+- `implement-proposal`: Carry out one Round of a proposal across many sessions: produce the Grounds its Verifications promise, set each result against its criterion, and record the user's judgements in a progress file next to the canvas.
 
 ## Glossary
 `GLOSSARY.md` holds the vocabulary shared by the skills. The plugin's hooks (`hooks/hooks.json`) load it into every session and every subagent, so a skill can use its terms without explaining them.
