@@ -22,51 +22,51 @@ def card(cid, zone, text, color=None, width=440):
 
 
 card("note", "note", """
-# PROTOTYPE · 第 1 轮 proposal 样张
+# PROTOTYPE · sample proposal, round 1
 
-只为看格式，不是真的 proposal。
-- library 卡片的摘要取自样本 library 原文的开头，个别是 research 报告里的转述，**未逐条核实**。
-- 数字、判据都是示意。
+For the format only; not a real proposal.
+- Library card summaries come from the opening lines of the sample library, a few paraphrased from research reports, **not checked one by one**.
+- Numbers and criteria are illustrative.
 
-## 图例
-- 青色：目标卡片
-- 无色：library 卡片（只引用，内容以 library 为准）
-- 绿色：proposal 自己的已站稳论证（动机、讨论、基准）
-- 橙色：**昂贵**的 Verification（设计论证）
-- 黄色：便宜的 Verification，以及所有 Conjecture
-- 紫色：展望（非承诺）
-- 红色：⚠ 例外（做不到浅），本轮没有
+## Legend
+- cyan: goal card
+- none: library card (cited only; the library is the authority)
+- green: the proposal's own established argument (motivation, discussion, benchmark)
+- orange: **costly** Verification (its design as an argument)
+- yellow: cheap Verification, and every Conjecture
+- purple: outlook (no commitment)
+- red: ⚠ exception (no shallow Conjecture possible); none this round
 
-边的标签：`Grounds` `Warrant` `Backing` `Rebuttal`；
-Conjecture 的出边写成「成立 → Backing」「不成立 → Grounds」。
+Edge labels: `Grounds` `Warrant` `Backing` `Rebuttal`;
+edges out of a Conjecture: `holds → <label>`, `fails → <label>`.
 """, None, 420)
 
 card("G", "goal", """
-# 目标 · 第 1 轮
+# Goal · round 1
 
-**问题**：tail 星在 N-body 模拟里的处理方式，如何影响
-(a) tail 本身的结构和运动学，(b) 从 tail 推出的结论？ — *用户说的；(a)(b) 两者都要，对齐时确认*
+**Question**: tail 星在 N-body 模拟里的处理方式，如何影响
+(a) tail 本身的结构和运动学，(b) 从 tail 推出的结论？ — *said by the user* · (a)(b) 两者都要，对齐时确认
 
-**研究对象**：一般意义上的星团 tidal tail — *用户说的*
+**Object**: 一般意义上的星团 tidal tail — *said by the user*
 
-**抓手**：三种处理 — *用户说的*
+**Levers**: 三种处理 — *said by the user*
 1. tail 星与星团分开积分（NBODY6）
 2. tail 星与星团成员一起积分（NBODY6）
 3. 一起积分，tail–星团相互作用用 tree（PeTar）
 
-**要看的量** — *从 library 提*
+**Quantities to look at** — *drawn from the library*
 - epicyclic overdensity 的位置（`Kroupa2022:e-kuepper`）
 - tail 沿轨道的数密度剖面（`Weis2025:tail-robust`）
 - 逃逸后 tail 星的 ΔL_z（`Weis2025:end-selfgravity`）
 
-**新颖性只相对于 library 判断，未查 library 之外的文献。**
+**Novelty is judged against the library only; no literature outside it was searched.**
 
-对齐于 2026-10-14 · 打开了 33 篇里的 19 篇（见 table.md）
+Aligned on 2026-10-14 · opened 19 of 33 papers (see table.md)
 """, GOAL, 520)
 
 # library cards (compact references)
 card("L_gieles_setup", "lib", """
-`Gieles2021:A_setup` · 中间论证
+`Gieles2021:A_setup` · intermediate
 两组逐星模型在 Pal 5 轨道上演化 11.5 Gyr（约 2×10⁵ 星）；逃逸星移出后作为 tracer 积分 *(Grounds 里写的)*
 """)
 card("L_gieles_code", "lib", """
@@ -74,32 +74,32 @@ card("L_gieles_code", "lib", """
 NBODY6++GPU：直接求和、无软化、Hermite + KS 正规化
 """)
 card("L_wang_setup", "lib", """
-`Wang2024:A_setup` · 中间论证
+`Wang2024:A_setup` · intermediate
 5 个 Pal 5 类模型（N₀ 2.1–3.5×10⁵），在 Pal 5 轨道上演化 12 Gyr；PeTar，不移除恒星
 """)
 card("L_kos_design", "lib", """
-`Kos2024:a-sim-design` · 中间论证
+`Kos2024:a-sim-design` · intermediate
 无碰撞的简化模拟：一百万个无质量粒子在随轨道移动、逐渐缩小的 Plummer 势里
 """)
 card("L_kos_check", "lib", """
-`Kos2024:a-nbody-check` · 中间论证
+`Kos2024:a-nbody-check` · intermediate
 简化模拟与碰撞 N-body（AMUSE/BHTree，50 次）给出相同的 tail 结构和位置
 """)
 card("L_casa_tp", "lib", """
 `Casamiquela2022:n_testparticle` · Native
 没有星–星引力的 test particle 模拟足以研究 tail 的取向和伸长
-Warrant：逃逸后路径只由星团轨道和银河势决定 **(读者推断)**
+Warrant: 逃逸后路径只由星团轨道和银河势决定 **(reader's inference)**
 """)
 card("L_weis_sg", "lib", """
 `Weis2025:end-selfgravity` · End
 逃逸后 L_z 不守恒：tail 星自身的引力是主要改变者，最多占逃逸后总变化的 70%
 """)
 card("L_weis_seed", "lib", """
-`Weis2025:seed-scatter` · 中间论证
+`Weis2025:seed-scatter` · intermediate
 相同参数、不同随机种子：星团内的质量分布差别很大（15 次实现）
 """)
 card("L_weis_robust", "lib", """
-`Weis2025:tail-robust` · 中间论证
+`Weis2025:tail-robust` · intermediate
 tail 的一维数密度和形状对种子不敏感（15 次实现的 1σ 带）
 """)
 card("L_pa_nbody", "lib", """
@@ -121,111 +121,111 @@ Küpper overdensity 的距离 *(转述自 research 报告，未核实)*
 
 # proposal's established arguments
 card("M1", "est", """
-## M1 · 动机
-**Claim**：library 里的模拟论文对 tail 星的处理方式各不相同，而且多数没有写明。
+## M1 · Motivation
+**Claim**: library 里的模拟论文对 tail 星的处理方式各不相同，而且多数没有写明。
 
 **Grounds**
 - 在打开的 19 篇模拟论文里，7 篇写明了处理方式：逃逸星作 tracer（Gieles2021）；全部保留（Arnold2025、Wang2024、Weis2025）；test particle（Kos2024、Casamiquela2022、PflammAltenburg2023）。
 - 其余 12 篇只写了代码名。其中 4 篇 NBODY6/7 论文 **在打开的 N 篇里没有一篇写明** 逃逸星怎么积分（已核对全文）。
 - 只有 `Kos2024:a-nbody-check` 在同一初始条件下比较过两种处理。
 
-**Warrant**：处理方式若影响结果，跨论文比较 tail 结论时就会混进处理方式的差异。
+**Warrant**: 处理方式若影响结果，跨论文比较 tail 结论时就会混进处理方式的差异。
 """, ESTABLISHED, 480)
 card("D1", "est", """
-## D1 · 讨论：一处没有边的冲突
-**Claim**：`Weis2025:end-selfgravity` 与以「忽略星–星引力」为前提的两种做法相冲突，两边互不引用。
+## D1 · Discussion: 一处没有边的冲突
+**Claim**: `Weis2025:end-selfgravity` 与以「忽略星–星引力」为前提的两种做法相冲突，两边互不引用。
 
-**Grounds**：Weis2025 测得 tail 自引力最多占逃逸后 ΔL_z 的 70%；`Kos2024:a-sim-design` 用无质量粒子；`Casamiquela2022:n_testparticle` 的 Warrant 认为逃逸后路径只由轨道和银河势决定（读者推断）。
+**Grounds**: Weis2025 测得 tail 自引力最多占逃逸后 ΔL_z 的 70%；`Kos2024:a-sim-design` 用无质量粒子；`Casamiquela2022:n_testparticle` 的 Warrant 认为逃逸后路径只由轨道和银河势决定 (reader's inference)。
 
-**Warrant**：若一种力占某个量变化的大部分，忽略它的模型对这个量的预测就不可靠。
+**Warrant**: 若一种力占某个量变化的大部分，忽略它的模型对这个量的预测就不可靠。
 
-**Qualifier**：Weis2025 只针对 Praesepe 一个模型。
+**Qualifier**: Weis2025 只针对 Praesepe 一个模型。
 """, ESTABLISHED, 480)
 card("B1", "est", """
-## B1 · 基准：Pal 5 有两组现成的模拟
-**Claim**：`Gieles2021` 和 `Wang2024` 都在 Pal 5 轨道上演化了约 2×10⁵ 星的模型，且分别对应处理 1（逃逸星作 tracer）和处理 3（PeTar，全部保留），可作为对照。
+## B1 · Benchmark: Pal 5 有两组现成的模拟
+**Claim**: `Gieles2021` 和 `Wang2024` 都在 Pal 5 轨道上演化了约 2×10⁵ 星的模型，且分别对应处理 1（逃逸星作 tracer）和处理 3（PeTar，全部保留），可作为对照。
 
-**Rebuttal**：两组模型的 BH 和双星设置不同，它们之间的差异不能只归于处理方式。
+**Rebuttal**: 两组模型的 BH 和双星设置不同，它们之间的差异不能只归于处理方式。
 """, ESTABLISHED, 480)
 
 # verifications
 card("V1", "est", """
-## V1 · Verification · **昂贵**
-**设计（论证）**：在 Pal 5 轨道上，用三种处理各跑 K 个种子的 Pal 5 类模型，初始条件取自 `Gieles2021:A_setup`。
+## V1 · Verification · costly
+**Design (argument)**: 在 Pal 5 轨道上，用三种处理各跑 K 个种子的 Pal 5 类模型，初始条件取自 `Gieles2021:A_setup`。
 
-**需要的东西**
+**Needs**
 - ✓ NBODY6++GPU fork `tidaltiles/units-v1`（sims/project.yaml）
 - ✓ PeTar `tidaltiles/formal-5694bb2`（sims/project.yaml）
 - ✗ allocation：需用户手动申请（sims/project.yaml 的 resource_notes）
 
-**规模**：3 处理 × K 种子 × N 星 × T Gyr。
-对照：项目写明一次比较约 6 CPU、墙钟上限 7 天（resource_notes）。Pal 5 规模的耗时项目里没有依据，**无法判断**能否在 7 天内完成。
+**Scale**: 3 处理 × K 种子 × N 星 × T Gyr。
+对照：项目写明一次比较约 6 CPU、墙钟上限 7 天（resource_notes）。Pal 5 规模的耗时项目里没有依据，能否在 7 天内完成：**cannot tell**。
 
-**标尺**：同一处理下 K 个种子之间的散布 σ_seed，由设计里的 K 个种子产生（`Weis2025:seed-scatter`）。
+**Yardstick**: 同一处理下 K 个种子之间的散布 σ_seed，由设计里的 K 个种子产生（`Weis2025:seed-scatter`）。
 
-**产出**：tail 沿轨道的数密度剖面；第一 overdensity 的位置；tail 星的 ΔL_z 分布。
+**Yields**: tail 沿轨道的数密度剖面；第一 overdensity 的位置；tail 星的 ΔL_z 分布。
 
-**待用户决定**：N（Gieles2021 用约 2×10⁵，可参照）、积分时长 T、种子数 K
+**For the user to decide**: N（Gieles2021 用约 2×10⁵，可参照）、积分时长 T、种子数 K
 """, COSTLY, 500)
 card("V0", "est", """
-## V0 · Verification · 便宜
-**设计**：读 `Gieles2021` 和 `Wang2024` 已发表的 Pal 5 tail 图，比较 tail 宽度。不跑模拟。
-**需要的东西**：✓ 两篇全文（library 目录下的 .md）
-**产出**：两组模型的 tail 宽度
+## V0 · Verification · cheap
+**Design (argument)**: 读 `Gieles2021` 和 `Wang2024` 已发表的 Pal 5 tail 图，比较 tail 宽度。不跑模拟。
+**Needs**: ✓ 两篇全文（library 目录下的 .md）
+**Yields**: 两组模型的 tail 宽度
 """, CHEAP, 420)
 
 # conjectures
 card("C0", "round", """
-## C0 · Conjecture（V0）
-**Claim**：`Wang2024` 的 Pal 5 tail（处理 3）比 `Gieles2021` 的（处理 1）更宽，差异超过两篇各自给出的不确定度。
-**Rebuttal（判据）**：差异小于两者不确定度之和则不成立。BH 与双星设置不同也会造成差异（见 B1）。
-**若成立** → 作为 C2 的 Backing
+## C0 · Conjecture (V0)
+**Claim**: `Wang2024` 的 Pal 5 tail（处理 3）比 `Gieles2021` 的（处理 1）更宽，差异超过两篇各自给出的不确定度。
+**Rebuttal (criterion)**: 差异小于两者不确定度之和则不成立。BH 与双星设置不同也会造成差异（见 B1）。
+**If it holds** → 作为 C2 的 Backing
 """, CONJ, 440)
 card("C1", "round", """
-## C1 · Conjecture（V1）· 浅 · 基准
-**Claim**：V1 中处理 1 的模型，其 tail 沿轨道的数密度剖面与 `Gieles2021` 的结果之差在 σ_seed 之内。
-**Warrant**：同一轨道、同类初始条件、同一处理，结果应当一致（B1）。
-**Rebuttal（判据）**：任一距离区间的偏差超过 2σ_seed 则不成立。
-**效应大小**：不适用（这是重现）。
+## C1 · Conjecture (V1) · shallow · benchmark
+**Claim**: V1 中处理 1 的模型，其 tail 沿轨道的数密度剖面与 `Gieles2021` 的结果之差在 σ_seed 之内。
+**Warrant**: 同一轨道、同类初始条件、同一处理，结果应当一致（B1）。
+**Rebuttal (criterion)**: 任一距离区间的偏差超过 2σ_seed 则不成立。
+**Effect size**: 不适用（这是重现）。
 
-**若成立** → 作为 V1 设计的 Backing
-**若不成立** → 设置与 Gieles2021 不一致，或差异本身值得追；先停下来查设置
+**If it holds** → 作为 V1 设计的 Backing
+**If it fails** → 设置与 Gieles2021 不一致，或差异本身值得追；先停下来查设置
 """, CONJ, 460)
 card("C2", "round", """
-## C2 · Conjecture（V1）· 浅
-**Claim**：三种处理下，第一 epicyclic overdensity 离星团的距离之差 Δx 超过 σ_seed。
-**Warrant**：overdensity 的位置由逃逸星的 epicycle 运动决定（`Kroupa2022:e-kuepper`）。
-**Qualifier**：Pal 5 轨道，演化到 T。
-**Rebuttal（判据）**：Δx < 2σ_seed 则不成立。
-**效应大小**：**未知**，library 里没有依据。
+## C2 · Conjecture (V1) · shallow
+**Claim**: 三种处理下，第一 epicyclic overdensity 离星团的距离之差 Δx 超过 σ_seed。
+**Warrant**: overdensity 的位置由逃逸星的 epicycle 运动决定（`Kroupa2022:e-kuepper`）。
+**Qualifier**: Pal 5 轨道，演化到 T。
+**Rebuttal (criterion)**: Δx < 2σ_seed 则不成立。
+**Effect size**: **unknown**，library 里没有依据。
 
-**若成立** → 处理方式影响 overdensity 位置（接 O1）
-**若不成立** → 三种处理在这一点上一致，最便宜的处理够用（接 O2）
+**If it holds** → 处理方式影响 overdensity 位置（接 O1）
+**If it fails** → 三种处理在这一点上一致，最便宜的处理够用（接 O2）
 """, CONJ, 460)
 card("C3", "round", """
-## C3 · Conjecture（V1）· 浅 · 赌注
-**Claim**：处理 1 下 tail 星的 ΔL_z 分布与处理 2 的差异超过 σ_seed。
-**Warrant**：D1。
-**效应大小**：预计可观：`Weis2025:end-selfgravity` 测得自引力最多占 70%。
+## C3 · Conjecture (V1) · shallow · bet
+**Claim**: 处理 1 下 tail 星的 ΔL_z 分布与处理 2 的差异超过 σ_seed。
+**Warrant**: D1。
+**Effect size**: 预计可观：`Weis2025:end-selfgravity` 测得自引力最多占 70%。
 
-**若成立** → 作为 `Gieles2021:A_setup` 的 Rebuttal（它把逃逸星当 tracer）
+**If it holds** → 作为 `Gieles2021:A_setup` 的 Rebuttal（它把逃逸星当 tracer）
 """, CONJ, 440)
 
 # outlook
 card("O1", "outlook", """
-## O1 · 展望（非承诺）
+## O1 · Outlook (no commitment)
 若 C2 成立：tail 的前后不对称 q 是否也随处理而变？这会牵动 `Kroupa2022:e-main` 用 Newton 模型的 q 检验引力。
-**缺**：C2 的结果
+**Lacks**: C2 的结果
 """, OUTLOOK, 420)
 card("O2", "outlook", """
-## O2 · 展望（非承诺）
+## O2 · Outlook (no commitment)
 若 C2 不成立：用处理 1 跑更大的参数网格（轨道、质量）。
-**缺**：C2 的结果
+**Lacks**: C2 的结果
 """, OUTLOOK, 380)
 card("O3", "outlook", """
-## O3 · 展望 · 昂贵 Verification V2（非承诺）
+## O3 · Outlook · costly Verification V2 (no commitment)
 在偏心轨道上重复 V1。`Jadhav2025:n_caveats` 说偏心率的影响大且难以估算。
-**缺**：C2 的结果；allocation
+**Lacks**: C2 的结果；allocation
 """, OUTLOOK, 420)
 
 # ---------------------------------------------------------------- edges (from -> to, label)
@@ -253,13 +253,13 @@ edges = [
     ("L_weis_robust", "C2", "Backing"),
     ("V1", "C3", "Grounds"),
     ("D1", "C3", "Warrant"),
-    ("C0", "C2", "成立 → Backing"),
-    ("C1", "V1", "成立 → Backing"),
-    ("C2", "O1", "成立 → Grounds"),
-    ("C2", "O2", "不成立 → Grounds"),
-    ("C3", "L_gieles_setup", "成立 → Rebuttal"),
+    ("C0", "C2", "holds → Backing"),
+    ("C1", "V1", "holds → Backing"),
+    ("C2", "O1", "holds → Grounds"),
+    ("C2", "O2", "fails → Grounds"),
+    ("C3", "L_gieles_setup", "holds → Rebuttal"),
     ("L_kroupa_main", "O1", "Grounds"),
-    ("C2", "O3", "成立 → Grounds"),
+    ("C2", "O3", "holds → Grounds"),
     ("L_jadhav_cav", "O3", "Grounds"),
 ]
 
@@ -297,7 +297,7 @@ def build_edges(nodes):
     for i, (f, t, label) in enumerate(edges):
         fs, ts = sides(by_id[f], by_id[t])
         e = {"id": f"e{i}", "fromNode": f, "fromSide": fs, "toNode": t, "toSide": ts, "label": label}
-        if label.startswith(("成立", "不成立")):
+        if label.startswith(("holds → ", "fails → ")):
             e["color"] = CONJ
         elif label == "Rebuttal":
             e["color"] = FLAG
