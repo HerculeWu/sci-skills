@@ -1,0 +1,518 @@
+{
+ "nodes": [
+  {
+   "id": "L_gieles_setup",
+   "type": "text",
+   "text": "`Gieles2021:A_setup` · 中间论证\n两组逐星模型在 Pal 5 轨道上演化 11.5 Gyr（约 2×10⁵ 星）；逃逸星移出后作为 tracer 积分 *(Grounds 里写的)*",
+   "x": 0,
+   "y": 2000,
+   "width": 440,
+   "height": 144
+  },
+  {
+   "id": "L_gieles_code",
+   "type": "text",
+   "text": "`Gieles2021:N_code` · Native\nNBODY6++GPU：直接求和、无软化、Hermite + KS 正规化",
+   "x": 480,
+   "y": 2000,
+   "width": 440,
+   "height": 118
+  },
+  {
+   "id": "L_wang_setup",
+   "type": "text",
+   "text": "`Wang2024:A_setup` · 中间论证\n5 个 Pal 5 类模型（N₀ 2.1–3.5×10⁵），在 Pal 5 轨道上演化 12 Gyr；PeTar，不移除恒星",
+   "x": 960,
+   "y": 2000,
+   "width": 440,
+   "height": 118
+  },
+  {
+   "id": "L_kos_design",
+   "type": "text",
+   "text": "`Kos2024:a-sim-design` · 中间论证\n无碰撞的简化模拟：一百万个无质量粒子在随轨道移动、逐渐缩小的 Plummer 势里",
+   "x": 1440,
+   "y": 2000,
+   "width": 440,
+   "height": 118
+  },
+  {
+   "id": "L_kos_check",
+   "type": "text",
+   "text": "`Kos2024:a-nbody-check` · 中间论证\n简化模拟与碰撞 N-body（AMUSE/BHTree，50 次）给出相同的 tail 结构和位置",
+   "x": 1920,
+   "y": 2000,
+   "width": 440,
+   "height": 118
+  },
+  {
+   "id": "L_casa_tp",
+   "type": "text",
+   "text": "`Casamiquela2022:n_testparticle` · Native\n没有星–星引力的 test particle 模拟足以研究 tail 的取向和伸长\nWarrant：逃逸后路径只由星团轨道和银河势决定 **(读者推断)**",
+   "x": 2400,
+   "y": 2000,
+   "width": 440,
+   "height": 170
+  },
+  {
+   "id": "L_weis_sg",
+   "type": "text",
+   "text": "`Weis2025:end-selfgravity` · End\n逃逸后 L_z 不守恒：tail 星自身的引力是主要改变者，最多占逃逸后总变化的 70%",
+   "x": 2880,
+   "y": 2000,
+   "width": 440,
+   "height": 118
+  },
+  {
+   "id": "L_weis_seed",
+   "type": "text",
+   "text": "`Weis2025:seed-scatter` · 中间论证\n相同参数、不同随机种子：星团内的质量分布差别很大（15 次实现）",
+   "x": 3360,
+   "y": 2000,
+   "width": 440,
+   "height": 118
+  },
+  {
+   "id": "L_weis_robust",
+   "type": "text",
+   "text": "`Weis2025:tail-robust` · 中间论证\ntail 的一维数密度和形状对种子不敏感（15 次实现的 1σ 带）",
+   "x": 3840,
+   "y": 2000,
+   "width": 440,
+   "height": 118
+  },
+  {
+   "id": "L_pa_nbody",
+   "type": "text",
+   "text": "`PflammAltenburg2023:n_nbody` · Native\n稀疏的 tail 需要一组模拟，而不是一次大模拟，才能看出涨落",
+   "x": 4320,
+   "y": 2000,
+   "width": 440,
+   "height": 118
+  },
+  {
+   "id": "L_jadhav_cav",
+   "type": "text",
+   "text": "`Jadhav2025:n_caveats` · Native\n网格之外的物理和数值（含**代码选择**、轨道偏心率）都可能改变 tail 的性质",
+   "x": 4800,
+   "y": 2000,
+   "width": 440,
+   "height": 118
+  },
+  {
+   "id": "L_kroupa_main",
+   "type": "text",
+   "text": "`Kroupa2022:e-main` · End\ntail 的前后不对称检验引力定律：Newton 模型给出近乎对称的 tail",
+   "x": 5280,
+   "y": 2000,
+   "width": 440,
+   "height": 118
+  },
+  {
+   "id": "L_kroupa_kuepper",
+   "type": "text",
+   "text": "`Kroupa2022:e-kuepper` · End\nKüpper overdensity 的距离 *(转述自 research 报告，未核实)*",
+   "x": 5760,
+   "y": 2000,
+   "width": 440,
+   "height": 118
+  },
+  {
+   "id": "M1",
+   "type": "text",
+   "text": "## M1 · 动机\n**Claim**：library 里的模拟论文对 tail 星的处理方式各不相同，而且多数没有写明。\n\n**Grounds**\n- 在打开的 19 篇模拟论文里，7 篇写明了处理方式：逃逸星作 tracer（Gieles2021）；全部保留（Arnold2025、Wang2024、Weis2025）；test particle（Kos2024、Casamiquela2022、PflammAltenburg2023）。\n- 其余 12 篇只写了代码名。其中 4 篇 NBODY6/7 论文 **在打开的 N 篇里没有一篇写明** 逃逸星怎么积分（已核对全文）。\n- 只有 `Kos2024:a-nbody-check` 在同一初始条件下比较过两种处理。\n\n**Warrant**：处理方式若影响结果，跨论文比较 tail 结论时就会混进处理方式的差异。",
+   "x": 300,
+   "y": 1150,
+   "width": 480,
+   "height": 482,
+   "color": "4"
+  },
+  {
+   "id": "D1",
+   "type": "text",
+   "text": "## D1 · 讨论：一处没有边的冲突\n**Claim**：`Weis2025:end-selfgravity` 与以「忽略星–星引力」为前提的两种做法相冲突，两边互不引用。\n\n**Grounds**：Weis2025 测得 tail 自引力最多占逃逸后 ΔL_z 的 70%；`Kos2024:a-sim-design` 用无质量粒子；`Casamiquela2022:n_testparticle` 的 Warrant 认为逃逸后路径只由轨道和银河势决定（读者推断）。\n\n**Warrant**：若一种力占某个量变化的大部分，忽略它的模型对这个量的预测就不可靠。\n\n**Qualifier**：Weis2025 只针对 Praesepe 一个模型。",
+   "x": 820,
+   "y": 1150,
+   "width": 480,
+   "height": 456,
+   "color": "4"
+  },
+  {
+   "id": "B1",
+   "type": "text",
+   "text": "## B1 · 基准：Pal 5 有两组现成的模拟\n**Claim**：`Gieles2021` 和 `Wang2024` 都在 Pal 5 轨道上演化了约 2×10⁵ 星的模型，且分别对应处理 1（逃逸星作 tracer）和处理 3（PeTar，全部保留），可作为对照。\n\n**Rebuttal**：两组模型的 BH 和双星设置不同，它们之间的差异不能只归于处理方式。",
+   "x": 1340,
+   "y": 1150,
+   "width": 480,
+   "height": 248,
+   "color": "4"
+  },
+  {
+   "id": "V0",
+   "type": "text",
+   "text": "## V0 · Verification · 便宜\n**设计**：读 `Gieles2021` 和 `Wang2024` 已发表的 Pal 5 tail 图，比较 tail 宽度。不跑模拟。\n**需要的东西**：✓ 两篇全文（library 目录下的 .md）\n**产出**：两组模型的 tail 宽度",
+   "x": 1860,
+   "y": 1150,
+   "width": 420,
+   "height": 222,
+   "color": "3"
+  },
+  {
+   "id": "V1",
+   "type": "text",
+   "text": "## V1 · Verification · **昂贵**\n**设计（论证）**：在 Pal 5 轨道上，用三种处理各跑 K 个种子的 Pal 5 类模型，初始条件取自 `Gieles2021:A_setup`。\n\n**需要的东西**\n- ✓ NBODY6++GPU fork `tidaltiles/units-v1`（sims/project.yaml）\n- ✓ PeTar `tidaltiles/formal-5694bb2`（sims/project.yaml）\n- ✗ allocation：需用户手动申请（sims/project.yaml 的 resource_notes）\n\n**规模**：3 处理 × K 种子 × N 星 × T Gyr。\n对照：项目写明一次比较约 6 CPU、墙钟上限 7 天（resource_notes）。Pal 5 规模的耗时项目里没有依据，**无法判断**能否在 7 天内完成。\n\n**标尺**：同一处理下 K 个种子之间的散布 σ_seed，由设计里的 K 个种子产生（`Weis2025:seed-scatter`）。\n\n**产出**：tail 沿轨道的数密度剖面；第一 overdensity 的位置；tail 星的 ΔL_z 分布。\n\n**待用户决定**：N（Gieles2021 用约 2×10⁵，可参照）、积分时长 T、种子数 K",
+   "x": 2320,
+   "y": 1150,
+   "width": 500,
+   "height": 716,
+   "color": "2"
+  },
+  {
+   "id": "C0",
+   "type": "text",
+   "text": "## C0 · Conjecture（V0）\n**Claim**：`Wang2024` 的 Pal 5 tail（处理 3）比 `Gieles2021` 的（处理 1）更宽，差异超过两篇各自给出的不确定度。\n**Rebuttal（判据）**：差异小于两者不确定度之和则不成立。BH 与双星设置不同也会造成差异（见 B1）。\n**若成立** → 作为 C2 的 Backing",
+   "x": 900,
+   "y": 450,
+   "width": 440,
+   "height": 248,
+   "color": "3"
+  },
+  {
+   "id": "C1",
+   "type": "text",
+   "text": "## C1 · Conjecture（V1）· 浅 · 基准\n**Claim**：V1 中处理 1 的模型，其 tail 沿轨道的数密度剖面与 `Gieles2021` 的结果之差在 σ_seed 之内。\n**Warrant**：同一轨道、同类初始条件、同一处理，结果应当一致（B1）。\n**Rebuttal（判据）**：任一距离区间的偏差超过 2σ_seed 则不成立。\n**效应大小**：不适用（这是重现）。\n\n**若成立** → 作为 V1 设计的 Backing\n**若不成立** → 设置与 Gieles2021 不一致，或差异本身值得追；先停下来查设置",
+   "x": 1380,
+   "y": 450,
+   "width": 460,
+   "height": 378,
+   "color": "3"
+  },
+  {
+   "id": "C2",
+   "type": "text",
+   "text": "## C2 · Conjecture（V1）· 浅\n**Claim**：三种处理下，第一 epicyclic overdensity 离星团的距离之差 Δx 超过 σ_seed。\n**Warrant**：overdensity 的位置由逃逸星的 epicycle 运动决定（`Kroupa2022:e-kuepper`）。\n**Qualifier**：Pal 5 轨道，演化到 T。\n**Rebuttal（判据）**：Δx < 2σ_seed 则不成立。\n**效应大小**：**未知**，library 里没有依据。\n\n**若成立** → 处理方式影响 overdensity 位置（接 O1）\n**若不成立** → 三种处理在这一点上一致，最便宜的处理够用（接 O2）",
+   "x": 1880,
+   "y": 450,
+   "width": 460,
+   "height": 378,
+   "color": "3"
+  },
+  {
+   "id": "C3",
+   "type": "text",
+   "text": "## C3 · Conjecture（V1）· 浅 · 赌注\n**Claim**：处理 1 下 tail 星的 ΔL_z 分布与处理 2 的差异超过 σ_seed。\n**Warrant**：D1。\n**效应大小**：预计可观：`Weis2025:end-selfgravity` 测得自引力最多占 70%。\n\n**若成立** → 作为 `Gieles2021:A_setup` 的 Rebuttal（它把逃逸星当 tracer）",
+   "x": 2380,
+   "y": 450,
+   "width": 440,
+   "height": 274,
+   "color": "3"
+  },
+  {
+   "id": "O1",
+   "type": "text",
+   "text": "## O1 · 展望（非承诺）\n若 C2 成立：tail 的前后不对称 q 是否也随处理而变？这会牵动 `Kroupa2022:e-main` 用 Newton 模型的 q 检验引力。\n**缺**：C2 的结果",
+   "x": 1300,
+   "y": -100,
+   "width": 420,
+   "height": 170,
+   "color": "6"
+  },
+  {
+   "id": "O2",
+   "type": "text",
+   "text": "## O2 · 展望（非承诺）\n若 C2 不成立：用处理 1 跑更大的参数网格（轨道、质量）。\n**缺**：C2 的结果",
+   "x": 1760,
+   "y": -100,
+   "width": 380,
+   "height": 144,
+   "color": "6"
+  },
+  {
+   "id": "O3",
+   "type": "text",
+   "text": "## O3 · 展望 · 昂贵 Verification V2（非承诺）\n在偏心轨道上重复 V1。`Jadhav2025:n_caveats` 说偏心率的影响大且难以估算。\n**缺**：C2 的结果；allocation",
+   "x": 2180,
+   "y": -100,
+   "width": 420,
+   "height": 170,
+   "color": "6"
+  },
+  {
+   "id": "G",
+   "type": "text",
+   "text": "# 目标 · 第 1 轮\n\n**问题**：tail 星在 N-body 模拟里的处理方式，如何影响\n(a) tail 本身的结构和运动学，(b) 从 tail 推出的结论？ — *用户说的；(a)(b) 两者都要，对齐时确认*\n\n**研究对象**：一般意义上的星团 tidal tail — *用户说的*\n\n**抓手**：三种处理 — *用户说的*\n1. tail 星与星团分开积分（NBODY6）\n2. tail 星与星团成员一起积分（NBODY6）\n3. 一起积分，tail–星团相互作用用 tree（PeTar）\n\n**要看的量** — *从 library 提*\n- epicyclic overdensity 的位置（`Kroupa2022:e-kuepper`）\n- tail 沿轨道的数密度剖面（`Weis2025:tail-robust`）\n- 逃逸后 tail 星的 ΔL_z（`Weis2025:end-selfgravity`）\n\n**新颖性只相对于 library 判断，未查 library 之外的文献。**\n\n对齐于 2026-10-14 · 打开了 33 篇里的 19 篇（见 table.md）",
+   "x": 300,
+   "y": -900,
+   "width": 520,
+   "height": 690,
+   "color": "5"
+  },
+  {
+   "id": "note",
+   "type": "text",
+   "text": "# PROTOTYPE · 第 1 轮 proposal 样张\n\n只为看格式，不是真的 proposal。\n- library 卡片的摘要取自样本 library 原文的开头，个别是 research 报告里的转述，**未逐条核实**。\n- 数字、判据都是示意。\n\n## 图例\n- 青色：目标卡片\n- 无色：library 卡片（只引用，内容以 library 为准）\n- 绿色：proposal 自己的已站稳论证（动机、讨论、基准）\n- 橙色：**昂贵**的 Verification（设计论证）\n- 黄色：便宜的 Verification，以及所有 Conjecture\n- 紫色：展望（非承诺）\n- 红色：⚠ 例外（做不到浅），本轮没有\n\n边的标签：`Grounds` `Warrant` `Backing` `Rebuttal`；\nConjecture 的出边写成「成立 → Backing」「不成立 → Grounds」。",
+   "x": -600,
+   "y": -900,
+   "width": 420,
+   "height": 690
+  }
+ ],
+ "edges": [
+  {
+   "id": "e0",
+   "fromNode": "M1",
+   "fromSide": "top",
+   "toNode": "G",
+   "toSide": "bottom",
+   "label": "Backing"
+  },
+  {
+   "id": "e1",
+   "fromNode": "D1",
+   "fromSide": "top",
+   "toNode": "G",
+   "toSide": "bottom",
+   "label": "Backing"
+  },
+  {
+   "id": "e2",
+   "fromNode": "L_kos_check",
+   "fromSide": "top",
+   "toNode": "G",
+   "toSide": "bottom",
+   "label": "Rebuttal",
+   "color": "1"
+  },
+  {
+   "id": "e3",
+   "fromNode": "L_jadhav_cav",
+   "fromSide": "left",
+   "toNode": "M1",
+   "toSide": "right",
+   "label": "Grounds"
+  },
+  {
+   "id": "e4",
+   "fromNode": "L_weis_sg",
+   "fromSide": "left",
+   "toNode": "D1",
+   "toSide": "right",
+   "label": "Grounds"
+  },
+  {
+   "id": "e5",
+   "fromNode": "L_kos_design",
+   "fromSide": "top",
+   "toNode": "D1",
+   "toSide": "bottom",
+   "label": "Grounds"
+  },
+  {
+   "id": "e6",
+   "fromNode": "L_casa_tp",
+   "fromSide": "left",
+   "toNode": "D1",
+   "toSide": "right",
+   "label": "Grounds"
+  },
+  {
+   "id": "e7",
+   "fromNode": "L_gieles_setup",
+   "fromSide": "right",
+   "toNode": "B1",
+   "toSide": "left",
+   "label": "Grounds"
+  },
+  {
+   "id": "e8",
+   "fromNode": "L_wang_setup",
+   "fromSide": "top",
+   "toNode": "B1",
+   "toSide": "bottom",
+   "label": "Grounds"
+  },
+  {
+   "id": "e9",
+   "fromNode": "B1",
+   "fromSide": "right",
+   "toNode": "V1",
+   "toSide": "left",
+   "label": "Backing"
+  },
+  {
+   "id": "e10",
+   "fromNode": "L_gieles_code",
+   "fromSide": "right",
+   "toNode": "V1",
+   "toSide": "left",
+   "label": "Warrant"
+  },
+  {
+   "id": "e11",
+   "fromNode": "L_weis_seed",
+   "fromSide": "left",
+   "toNode": "V1",
+   "toSide": "right",
+   "label": "Backing"
+  },
+  {
+   "id": "e12",
+   "fromNode": "L_pa_nbody",
+   "fromSide": "left",
+   "toNode": "V1",
+   "toSide": "right",
+   "label": "Backing"
+  },
+  {
+   "id": "e13",
+   "fromNode": "L_jadhav_cav",
+   "fromSide": "left",
+   "toNode": "V1",
+   "toSide": "right",
+   "label": "Rebuttal",
+   "color": "1"
+  },
+  {
+   "id": "e14",
+   "fromNode": "B1",
+   "fromSide": "right",
+   "toNode": "V0",
+   "toSide": "left",
+   "label": "Grounds"
+  },
+  {
+   "id": "e15",
+   "fromNode": "V0",
+   "fromSide": "left",
+   "toNode": "C0",
+   "toSide": "right",
+   "label": "Grounds"
+  },
+  {
+   "id": "e16",
+   "fromNode": "V1",
+   "fromSide": "left",
+   "toNode": "C1",
+   "toSide": "right",
+   "label": "Grounds"
+  },
+  {
+   "id": "e17",
+   "fromNode": "B1",
+   "fromSide": "top",
+   "toNode": "C1",
+   "toSide": "bottom",
+   "label": "Warrant"
+  },
+  {
+   "id": "e18",
+   "fromNode": "V1",
+   "fromSide": "top",
+   "toNode": "C2",
+   "toSide": "bottom",
+   "label": "Grounds"
+  },
+  {
+   "id": "e19",
+   "fromNode": "L_kroupa_kuepper",
+   "fromSide": "left",
+   "toNode": "C2",
+   "toSide": "right",
+   "label": "Warrant"
+  },
+  {
+   "id": "e20",
+   "fromNode": "L_weis_robust",
+   "fromSide": "left",
+   "toNode": "C2",
+   "toSide": "right",
+   "label": "Backing"
+  },
+  {
+   "id": "e21",
+   "fromNode": "V1",
+   "fromSide": "top",
+   "toNode": "C3",
+   "toSide": "bottom",
+   "label": "Grounds"
+  },
+  {
+   "id": "e22",
+   "fromNode": "D1",
+   "fromSide": "right",
+   "toNode": "C3",
+   "toSide": "left",
+   "label": "Warrant"
+  },
+  {
+   "id": "e23",
+   "fromNode": "C0",
+   "fromSide": "right",
+   "toNode": "C2",
+   "toSide": "left",
+   "label": "成立 → Backing",
+   "color": "3"
+  },
+  {
+   "id": "e24",
+   "fromNode": "C1",
+   "fromSide": "right",
+   "toNode": "V1",
+   "toSide": "left",
+   "label": "成立 → Backing",
+   "color": "3"
+  },
+  {
+   "id": "e25",
+   "fromNode": "C2",
+   "fromSide": "top",
+   "toNode": "O1",
+   "toSide": "bottom",
+   "label": "成立 → Grounds",
+   "color": "3"
+  },
+  {
+   "id": "e26",
+   "fromNode": "C2",
+   "fromSide": "top",
+   "toNode": "O2",
+   "toSide": "bottom",
+   "label": "不成立 → Grounds",
+   "color": "3"
+  },
+  {
+   "id": "e27",
+   "fromNode": "C3",
+   "fromSide": "left",
+   "toNode": "L_gieles_setup",
+   "toSide": "right",
+   "label": "成立 → Rebuttal",
+   "color": "3"
+  },
+  {
+   "id": "e28",
+   "fromNode": "L_kroupa_main",
+   "fromSide": "left",
+   "toNode": "O1",
+   "toSide": "right",
+   "label": "Grounds"
+  },
+  {
+   "id": "e29",
+   "fromNode": "C2",
+   "fromSide": "top",
+   "toNode": "O3",
+   "toSide": "bottom",
+   "label": "成立 → Grounds",
+   "color": "3"
+  },
+  {
+   "id": "e30",
+   "fromNode": "L_jadhav_cav",
+   "fromSide": "left",
+   "toNode": "O3",
+   "toSide": "right",
+   "label": "Grounds"
+  }
+ ]
+}
