@@ -11,23 +11,23 @@ The subagent reads the whole canvas, and the full text where there is one. Cards
 
 ## The full text
 Two things are checked against it before they are reported:
-- **A silence.** "Not in any card" may only mean the reader left it out. Search the full text before reporting 没说; without a full text, report 没有卡片提到 instead. A false 没说 sends the user to collaborators with a gap that does not exist.
+- **A silence.** "Not in any card" may only mean the reader left it out. Search the full text before reporting *silent*; without a full text, report *no card mentions it* instead. A false *silent* sends the user to collaborators with a gap that does not exist.
 - **A reader's inference.** Where the stance rests on a Warrant marked `(implicit)` or another inference, check the text and say whether it bears the inference out.
 
 ## Report
-Returned as the subagent's reply, in the user's language:
+Returned as the subagent's reply:
 
 ```markdown
 # <paper key>
-全文：有 | 无
+Full text: yes | no
 
-| 要素 | 态度 | 卡片 | 原文 |
+| Element | Stance | Cards | Quote |
 |---|---|---|---|
-| T | 确立 | `Gieles2021:A_setup` | "escapers are removed and integrated as tracers" |
+| T | established | `Gieles2021:A_setup` | "escapers are removed and integrated as tracers" |
 | K | … | … | … |
 | S | … | … | … |
 
-## 其他观察
+## Other observations
 - one line each, with card ids
 ```
 
@@ -35,11 +35,11 @@ One row per element, with one stance:
 
 | Stance | Meaning |
 |---|---|
-| 确立 | the paper argues it, on its own Grounds |
-| 假定 | the paper relies on it without arguing it |
-| 争议 | the paper argues against it, or reports results that conflict |
-| 没说 | the full text, searched, does not address it |
-| 没有卡片提到 | no full text, and no card addresses it |
+| established | the paper argues it, on its own Grounds |
+| assumed | the paper relies on it without arguing it |
+| disputed | the paper argues against it, or reports results that conflict |
+| silent | the full text, searched, does not address it |
+| no card mentions it | no full text, and no card addresses it |
 | — | the element does not apply to this paper |
 
-Add **(读者推断)** to a stance that rests on an inference, with what the full text showed. **其他观察** holds silences and conflicts the subagent noticed outside the checklist; it may be empty.
+Add **(reader's inference)** to a stance that rests on an inference, with what the full text showed. **Other observations** holds silences and conflicts noticed outside the checklist; it may be empty.

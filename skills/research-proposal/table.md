@@ -1,57 +1,57 @@
 # Comparison table
-`proposals/<name>/table.md`, one per goal, written in the user's language. Every round appends to it: rows carry the round they were added in, and a row is edited only to change a candidate's status. Every 没说 and 假定 on the canvas traces back to a cell here.
+`proposals/<name>/table.md`, one per goal. Every round appends to it: rows carry the round they were added in, and a row is edited only to change a candidate's status. Every *silent* and *assumed* on the canvas traces back to a cell here.
 
 ```markdown
-# 对照表 · <name>
+# Comparison table · <name>
 
-目标：<the goal as a question>
-library：<library dir>（<M> 篇，short 在 `shorts/`）
+Goal: <the goal as a question>
+Library: <library dir> (<M> papers, Shorts in `shorts/`)
 
-## 要素
+## Elements
 
-| id | 要素 | 来源 | 加入于 |
+| id | Element | Source | Added in |
 |---|---|---|---|
-| T | … | 用户说的 | 第 1 轮 |
-| Q1 | … | 从 library 提（`Weis2025:tail-robust`） | 第 1 轮 |
-| K | 这类运行的约束和警告 | 固定项 | 第 1 轮 |
-| S | 可当标尺的散布或效应大小 | 固定项 | 第 1 轮 |
+| T | … | said by the user | round 1 |
+| Q1 | … | drawn from the library (`Weis2025:tail-robust`) | round 1 |
+| K | constraints and warnings for this kind of run | fixed | round 1 |
+| S | scatter or effect sizes usable as a yardstick | fixed | round 1 |
 
-## 打开记录
+## Opening record
 
-「没说」的范围就是这里列出的论文。
+The scope of every "silent" is the papers listed here.
 
-| 要素 | 打开的论文 | 篇数 | 第几轮 |
+| Element | Papers opened | Count | Round |
 |---|---|---|---|
 
-## 论文 × 要素
+## Papers × elements
 
-态度：**确立** / **假定** / **争议** / **没说**（全文核对过）/ **没有卡片提到**（无全文）/ —（不适用）
+Stances: **established** / **assumed** / **disputed** / **silent** (full text checked) / **no card mentions it** (no full text) / — (does not apply)
 
-| 论文 | T | Q1 | K | S |
+| Paper | T | Q1 | K | S |
 |---|---|---|---|---|
-| Gieles2021 | **确立**：一句原文或转述（`A_setup`） | … | — | — |
+| Gieles2021 | **established**: one quoted or paraphrased line (`A_setup`) | … | — | — |
 
-## 跨论文的发现
+## Findings across papers
 
-| id | 发现 | 涉及的卡片 | 上 canvas |
+| id | Finding | Cards | On the canvas |
 |---|---|---|---|
 
-## 候选
+## Candidates
 
-| 轮 | Verification 组 | 昂贵？ | 挂的 Conjecture | 状态 | 理由 |
+| Round | Verification group | Costly? | Conjectures | Status | Reason |
 |---|---|---|---|---|---|
 
-## 也许值得加进 library 的论文
+## Papers that may be worth adding to the library
 
-被挑中的候选所牵动的卡片引用的集合外工作，由用户决定加不加。
+Works outside the set, cited by the cards the chosen candidates move. Adding them is the user's choice.
 
-| 被引用于 | 文献（照 `Cites:` 行原文） |
+| Cited on | Work (as on the `Cites:` line) |
 |---|---|
 ```
 
-- **要素**: the agreed elements of the idea, plus K and S.
-- **打开记录**: for each element, the papers opened for it. This is the scope of every 没说.
-- **论文 × 要素**: one stance per cell from the subagents' reports, with the card id (within the paper) and one quoted line.
-- **跨论文的发现**: findings that span papers, such as two cards that conflict without citing each other, and whether each went on the canvas.
-- **候选**: every candidate laid out in step 3. 状态 is 挑中, 未挑中 or 已排除; 理由 records who decided and why, so an excluded direction stays out of later rounds.
-- **也许值得加进 library 的论文**: from the `Cites:` lines of the cards the chosen candidates move, for works outside the set.
+- **Elements**: the agreed elements of the idea, plus K and S.
+- **Opening record**: for each element, the papers opened for it. This is the scope of every *silent*.
+- **Papers × elements**: one stance per cell from the subagents' reports, with the card id (within the paper) and one quoted line.
+- **Findings across papers**: findings that span papers, such as two cards that conflict without citing each other, and whether each went on the canvas.
+- **Candidates**: every candidate laid out in step 3. Status is *chosen*, *not chosen* or *ruled out*; Reason records who decided and why, so a ruled-out direction stays out of later rounds.
+- **Papers that may be worth adding to the library**: from the `Cites:` lines of the cards the chosen candidates move, for works outside the set.
