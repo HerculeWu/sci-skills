@@ -1,7 +1,7 @@
 {
   "name": "sci-skills",
   "version": "0.1.0",
-  "description": "Skills for scientific work: find papers through NASA ADS, read a paper into an argument graph, join a set of papers into an argument library. Loads a shared glossary into every session.",
+  "description": "Skills for scientific work: find papers through NASA ADS, read a paper into an argument graph, join a set of papers into an argument library, draw a research proposal from it. Loads a shared glossary into every session.",
   "author": { "name": "Wenjie Wu" },
   "keywords": ["science", "papers", "nasa-ads", "argumentation", "obsidian"]
 }
