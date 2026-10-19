@@ -1,7 +1,7 @@
 ---
 name: research-proposal
 description: Turn a vague research idea into a proposal drawn from an Argument Library -- one layer of Conjectures, each hung on the Verification that would decide it, as an Obsidian canvas.
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 # research-proposal
 Turn a vague research idea into a proposal: an Obsidian canvas that adds one layer of **Conjectures** on top of an **Argument Library**, each hung on the **Verification** that would produce its Grounds. Research runs in rounds -- propose, implement, analyse, propose again, with collaborators in between. This skill writes the proposal of one round; implementing it and judging its outcomes belong to the user.
