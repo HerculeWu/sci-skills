@@ -8,6 +8,7 @@ The scope of this repo is to provid usefull skills for scientific works. Treat t
 - `research-proposal`: Turn a vague research idea into a proposal drawn from an Argument Library: one layer of Conjectures, each hung on the Verification that would decide it, as an Obsidian canvas.
 - `implement-proposal`: Carry out one Round of a proposal across many sessions: produce the Grounds its Verifications promise, set each result against its criterion, and record the user's judgements in a progress file next to the canvas.
 - `build-paper-argument`: Build a paper's own Argument DAG from the judged rounds of one or more proposals, as an Obsidian canvas the author reviews before any text is written.
+- `calibrate-to-library`: Measure how an Argument Library's papers are written -- the kinds of their paragraphs, their order and proportion, the register of their sentences -- as testimony and tools that `write-paper` reuses.
 
 Design decisions that are hard to reverse are recorded in `docs/adr/`.
 
