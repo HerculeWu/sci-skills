@@ -24,7 +24,7 @@ The vocabulary of the sci-skills plugin. These meanings apply when working with 
 - An argument cannot stand without Claim, Grounds and Warrant. To adapt to practical situations and address counterarguments, Backing, Qualifier and Rebuttal are added.
 - Native Argument and End Argument are special type of an Argument. An End Argument can not serve as Grounds, Warrant, Backing or Rebuttal of any other Argument in the same paper; in an Argument Library it can serve an argument of another paper.
 - In a proposal, Native Argument is relative to the proposal: an argument whose support comes entirely from the Argument Library or cited works.
-- One Verification can ground several Conjectures. A refuted Conjecture establishes its opposite, which other arguments can use.
+- One Verification can ground several Conjectures. A refuted Conjecture establishes its opposite, which other arguments can use. In a paper's own Argument DAG it enters as a Qualifier or Rebuttal unless the author makes its opposite a Claim.
 
 ## Flagged ambiguities
 - **Claim**, **Grounds**, **Warrant**, **Backing**, **Qualifier** and **Rebuttal** are common English words. They name a Toulmin element only when capitalized.

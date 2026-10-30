@@ -35,7 +35,7 @@ export const RANKS = ["main", "secondary", "side"];
 const REQUIRED = ["Claim", "Grounds", "Warrant"];
 const CLAIMABLE = ["held", "failed"];
 const JUDGED = ["held", "failed", "not done"];
-// a failed Conjecture enters only as a limit or an objection
+// the agent enters a failed Conjecture only as a limit or an objection; elsewhere it is the author's choice
 const FAILED_SECTIONS = ["Qualifier", "Rebuttal"];
 // Obsidian canvas colour preset 1 (red) marks every Rebuttal edge
 const REBUTTAL_COLOR = "1";
@@ -312,7 +312,7 @@ export function checkArgument(canvas, { judgements = new Map(), library = null, 
       else if (!CLAIMABLE.includes(status)) problems.push(`${where}: cites ${ref.ref}, which is ${status}; only held and failed Conjectures enter the paper`);
       else if (status === "failed") {
         const outside = ["Claim", "Grounds", "Warrant", "Backing"].filter((h) => (section(card.text, h) ?? "").includes(ref.ref));
-        if (outside.length > 0) problems.push(`${where}: cites failed ${ref.ref} under ${outside.join(", ")}; a failed Conjecture enters only as ${FAILED_SECTIONS.join(" or ")}`);
+        if (outside.length > 0) faults.push(`${where}: cites failed ${ref.ref} under ${outside.join(", ")}; the agent enters a failed Conjecture only as ${FAILED_SECTIONS.join(" or ")}, so this stands only as the author's choice`);
       }
     }
     if (libraryIds) {

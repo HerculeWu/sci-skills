@@ -28,7 +28,7 @@ Words this skill uses in its own sense:
 The canvas is written in English, whatever language the conversation is in: `write-paper` and its subagents read it. Only the reply is in the user's language.
 
 ## What the canvas stands on
-- **Only judgements make Claims.** A held judgement grounds a Claim; a failed one limits or objects to a Claim, or stays out. The user judged each against a criterion fixed in advance, and a Claim stronger than its judgements is the error no reader can catch.
+- **Only judgements make Claims.** A held judgement grounds a Claim; a failed one limits or objects to a Claim, or stays out. Building a Claim on the opposite of a failed one is the author's call, never the agent's. The user judged each against a criterion fixed in advance, and a Claim stronger than its judgements is the error no reader can catch.
 - **Every number traces to a file.** Each number on a card names the judgement, file or library card it comes from. Later checks compare the text with the canvas; only this trace makes the canvas worth comparing with.
 - **The library is the field's shape.** Natives come from the library; the canvas's depth and width are set beside the library's (`shape`), as testimony of how papers in this field are built.
 - **The author decides what the paper is for.** Which End is the main one, the sentence each End leaves with the reader, and who that reader is: without these the paper cannot say what its main result is, and only the author can say them.

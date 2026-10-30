@@ -119,12 +119,13 @@ test("a card with no path to an End is reported", () => {
   assert.deepEqual(check(canvas).problems, ['card "n-epicycle": no path to an End Argument']);
 });
 
-test("only held and failed Conjectures enter, and a failed one only as Qualifier or Rebuttal", () => {
+test("only held and failed Conjectures enter; a failed one outside Qualifier and Rebuttal is a fault for the author", () => {
   const canvas = argument();
   const r = node(canvas, "r-width");
   r.text = r.text.replace("## Warrant\n", `## Warrant\n\`${REF}:C5\` says so; \`${REF}:C7\` and \`${REF}:C99\` too.\n`);
-  const { problems } = check(canvas);
-  assert.ok(problems.some((p) => p.includes(`failed ${REF}:C5 under Warrant`)));
+  const { problems, faults } = check(canvas);
+  assert.ok(!problems.some((p) => p.includes(`${REF}:C5`)));
+  assert.ok(faults.some((f) => f.includes(`failed ${REF}:C5 under Warrant`) && f.includes("author's choice")));
   assert.ok(problems.some((p) => p.includes(`${REF}:C7, which is not done`)));
   assert.ok(problems.some((p) => p.includes(`${REF}:C99, which no progress record holds`)));
 });

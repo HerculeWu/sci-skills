@@ -53,7 +53,7 @@ Cites: <entry, as in the library paper's meta.json or an ADS record>
 
 ### What a judgement may become
 - **held** → Grounds of a Claim.
-- **failed** → only a Qualifier or Rebuttal of a card whose Claim rests on held judgements; where it fits nowhere, it stays out.
+- **failed** → only a Qualifier or Rebuttal of a card whose Claim rests on held judgements; where it fits nowhere, it stays out. A Claim that is the opposite of a failed Conjecture, with the failed judgement as its Grounds, is the author's to make, by editing the canvas or by asking for it; `check` then shows it as a `fault:` and passes.
 - **not done**, and readings no Conjecture fixed a criterion for in advance → a Result whose Qualifier says `Not a Conjecture: <what was read, from which Verification>`, with the file. It is a measurement and reads as one, never as a tested prediction.
 
 ### End card
@@ -87,4 +87,4 @@ node <skill-dir>/scripts/paper-argument.mjs check <argument.canvas> --library <l
 
 - `judgements`: every held and failed Conjecture of every handed-over round, with its Claim and Result line; rounds not handed over are listed as skipped. With `--canvas`, each is marked `on canvas` or `new`.
 - `shape`: cards, depth and cards per level of each library paper and their median, and of the canvas when given. Testimony of how the field builds a paper, never a target.
-- `check`: prints `ok <path>`, or every problem as `error: <reason>` with a non-zero exit. It confirms the canvas parses; ids, kind lines and the three required sections; Rank, Sentence, Reader and exactly one main End; edge labels and red Rebuttals; no cycle, no edge out of an End, every card on a path to an End; every judgement exists in its progress record and is held or failed, a failed one only under Qualifier or Rebuttal; every library card and file named exists; every Grounds item with a number names its source. It also prints `fault:` lines that do not fail the check: a title number the card's Claim, Grounds and Warrant do not state, and a Claim range its Grounds contradict. Each is the author's to see.
+- `check`: prints `ok <path>`, or every problem as `error: <reason>` with a non-zero exit. It confirms the canvas parses; ids, kind lines and the three required sections; Rank, Sentence, Reader and exactly one main End; edge labels and red Rebuttals; no cycle, no edge out of an End, every card on a path to an End; every judgement exists in its progress record and is held or failed; every library card and file named exists; every Grounds item with a number names its source. It also prints `fault:` lines that do not fail the check: a title number the card's Claim, Grounds and Warrant do not state, a Claim range its Grounds contradict, and a failed judgement outside Qualifier and Rebuttal. Each is the author's to see.
