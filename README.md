@@ -2,7 +2,7 @@
 
 [English](#english) | [中文](#中文)
 
-A Claude Code plugin with skills for scientific work: find papers, read one paper into a graph of its arguments, join a set of papers into one graph along their citations, draw a research proposal from that graph, and carry it out round by round.
+A Claude Code plugin with skills for scientific work: find papers, read one paper into a graph of its arguments, join a set of papers into one graph along their citations, draw a research proposal from that graph, carry it out round by round, and build the argument of the paper that reports it.
 
 ### Skills
 
@@ -13,6 +13,7 @@ A Claude Code plugin with skills for scientific work: find papers, read one pape
 | `build-argument-library` | Reads a set of papers and joins their Argument DAGs along the citations between them into one Obsidian canvas | Only when you call `/sci-skills:build-argument-library` |
 | `research-proposal` | Turns a vague research idea into a proposal drawn from an Argument Library: one layer of Conjectures, each with the Verification that would decide it, as an Obsidian canvas | Only when you call `/sci-skills:research-proposal` |
 | `implement-proposal` | Carries out one round of a proposal across many sessions: produces the Grounds its Verifications promise, sets each result against its criterion, and records your judgements in a progress file | Only when you call `/sci-skills:implement-proposal` |
+| `build-paper-argument` | Builds the Argument DAG of the paper that reports your judged rounds, as an Obsidian canvas you review before any text is written | Only when you call `/sci-skills:build-paper-argument` |
 
 #### find-papers
 
@@ -74,11 +75,20 @@ Call `/sci-skills:implement-proposal` at the start of each working session on a 
 
 When every Conjecture is judged, the round is handed over: a summary of your judgements, the limits the next round should know, and the ideas noted along the way. The progress file is what `research-proposal` takes as the round's outcomes.
 
-A typical path through the skills: use `find-papers` to get a reading list, obtain the full texts yourself, run `build-argument-library` on them, then `research-proposal` with your idea, `implement-proposal` for the round you chose, and `research-proposal` again with its outcomes.
+#### build-paper-argument
+
+Call `/sci-skills:build-paper-argument` when the rounds you have judged are enough for a paper. Claude reads the progress files of the proposals you name and builds the paper's own Argument DAG under `papers/<paper>/argument.canvas`.
+
+- Only Conjectures you judged held make Claims. A failed one enters only as a Qualifier or Rebuttal of a held one, or stays out. Measurements made without a criterion fixed in advance enter as results marked "Not a Conjecture".
+- Every number on a card names the judgement, file or library card it comes from.
+- Before building the chains, it stops for you to decide the End Arguments: which one is main, the one sentence each leaves in the abstract and the conclusions, and who reads the paper for it. It stops again when the canvas passes its check, for you to review it.
+- Run it again after further rounds: it brings in the new judgements and leaves your own edits to the canvas alone.
+
+A typical path through the skills: use `find-papers` to get a reading list, obtain the full texts yourself, run `build-argument-library` on them, then `research-proposal` with your idea, `implement-proposal` for the round you chose, and `research-proposal` again with its outcomes. When the outcomes are enough for a paper, `build-paper-argument` drafts its argument.
 
 ### Glossary
 
-`GLOSSARY.md` defines the terms the skills share (Toulmin model, Argument DAG, Native Argument, End Argument, Argument Library, Conjecture, Verification, Round, Short). The plugin's hooks load it into every session and every subagent.
+`GLOSSARY.md` defines the terms the skills share (Toulmin model, Argument DAG, Native Argument, End Argument, Argument Library, Conjecture, Verification, Round, Short, End rank). The plugin's hooks load it into every session and every subagent.
 
 ### Install
 
@@ -97,18 +107,19 @@ In Claude Code:
 - [Obsidian](https://obsidian.md), to open the `.canvas` files.
 - For `research-proposal`: an Argument Library built by `build-argument-library`, ideally with the papers' full texts next to it.
 - For `implement-proposal`: a canvas written by `research-proposal`, and project docs that say how its Verifications are done.
+- For `build-paper-argument`: at least one round handed over by `implement-proposal`, and the Argument Library.
 
 ### Development
 
 `AGENTS.md` holds the principles the skills are built on. The scripts have unit tests:
 
 ```bash
-node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-library/scripts/library.test.mjs skills/research-proposal/scripts/proposal.test.mjs skills/implement-proposal/scripts/progress.test.mjs
+node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-library/scripts/library.test.mjs skills/research-proposal/scripts/proposal.test.mjs skills/implement-proposal/scripts/progress.test.mjs skills/build-paper-argument/scripts/paper-argument.test.mjs
 ```
 
 ## 中文
 
-一个 Claude Code 插件，提供科研用的 skill：查找论文，把一篇论文读成论证图，把一组论文按引用关系连成一张图，从这张图出发写研究提案，再一轮一轮地实现它。
+一个 Claude Code 插件，提供科研用的 skill：查找论文，把一篇论文读成论证图，把一组论文按引用关系连成一张图，从这张图出发写研究提案，一轮一轮地实现它，再建出报告它的论文的论证。
 
 ### Skills
 
@@ -119,6 +130,7 @@ node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-librar
 | `build-argument-library` | 读一组论文，把各篇的 Argument DAG 按彼此的引用关系连成一张 Obsidian canvas | 只在你调用 `/sci-skills:build-argument-library` 时运行 |
 | `research-proposal` | 从 Argument Library 出发，把一个模糊的研究想法写成提案：一层 Conjecture，每个挂在能判定它的 Verification 上，写成 Obsidian canvas | 只在你调用 `/sci-skills:research-proposal` 时运行 |
 | `implement-proposal` | 跨多个会话实现提案的一轮：产出 Verification 承诺的 Grounds，把每个结果和它的判据摆在一起，把你的判断记进进度文件 | 只在你调用 `/sci-skills:implement-proposal` 时运行 |
+| `build-paper-argument` | 从你判断过的各轮建出报告它们的论文的 Argument DAG，写成 Obsidian canvas，在写任何正文之前由你审 | 只在你调用 `/sci-skills:build-paper-argument` 时运行 |
 
 #### find-papers
 
@@ -180,11 +192,20 @@ node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-librar
 
 所有 Conjecture 都判断完，这一轮就交接了：给出你的判断汇总、下一轮需要知道的限制，以及过程中记下的新想法。进度文件就是 `research-proposal` 下一轮读的结果。
 
-几个 skill 的典型用法：先用 `find-papers` 得到阅读清单，自己取得全文，对它们运行 `build-argument-library`，再带着你的想法运行 `research-proposal`，用 `implement-proposal` 实现选定的这一轮，最后带着结果再运行 `research-proposal`。
+#### build-paper-argument
+
+当你判断过的轮次够写一篇论文时，调用 `/sci-skills:build-paper-argument`。Claude 读你指定的提案的进度文件，在 `papers/<论文短名>/argument.canvas` 建出这篇论文自己的 Argument DAG。
+
+- 只有你判为 held 的 Conjecture 能成为 Claim。failed 的只作为某个 held 卡的 Qualifier 或 Rebuttal 进来，否则不进。没有事先定判据的测量作为结果进来，标明 "Not a Conjecture"。
+- 卡上的每个数都写明来自哪个判断、文件或 library 卡片。
+- 建论证链之前，它停下来请你定 End Argument：哪个是主结果、每个在摘要和结论里留下的那一句话、谁为它读这篇论文。canvas 通过检查后再停一次，请你审。
+- 之后的轮次判断完可以再运行：它把新的判断带进来，你对 canvas 的手改不动。
+
+几个 skill 的典型用法：先用 `find-papers` 得到阅读清单，自己取得全文，对它们运行 `build-argument-library`，再带着你的想法运行 `research-proposal`，用 `implement-proposal` 实现选定的这一轮，最后带着结果再运行 `research-proposal`。结果够写论文时，用 `build-paper-argument` 建出它的论证。
 
 ### 词表
 
-`GLOSSARY.md` 定义了各个 skill 共用的术语（Toulmin model、Argument DAG、Native Argument、End Argument、Argument Library、Conjecture、Verification、Round、Short）。插件的 hook 会把它加载到每个会话和每个 subagent 里。
+`GLOSSARY.md` 定义了各个 skill 共用的术语（Toulmin model、Argument DAG、Native Argument、End Argument、Argument Library、Conjecture、Verification、Round、Short、End rank）。插件的 hook 会把它加载到每个会话和每个 subagent 里。
 
 ### 安装
 
@@ -203,11 +224,12 @@ node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-librar
 - [Obsidian](https://obsidian.md)，用来打开 `.canvas` 文件。
 - `research-proposal` 需要一个由 `build-argument-library` 建好的 Argument Library，最好全文也放在旁边。
 - `implement-proposal` 需要一张由 `research-proposal` 写好的 canvas，以及写明各 Verification 怎么做的项目说明。
+- `build-paper-argument` 需要至少一轮由 `implement-proposal` 交接过的进度文件，以及 Argument Library。
 
 ### 开发
 
 `AGENTS.md` 记录了构建这些 skill 的原则。脚本带有单元测试：
 
 ```bash
-node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-library/scripts/library.test.mjs skills/research-proposal/scripts/proposal.test.mjs skills/implement-proposal/scripts/progress.test.mjs
+node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-library/scripts/library.test.mjs skills/research-proposal/scripts/proposal.test.mjs skills/implement-proposal/scripts/progress.test.mjs skills/build-paper-argument/scripts/paper-argument.test.mjs
 ```

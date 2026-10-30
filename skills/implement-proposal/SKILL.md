@@ -107,4 +107,4 @@ The user may answer any part; what stays unanswered comes back next session. Clo
 1. A table: each Conjecture, the user's judgement, the user's words in one line.
 2. The limits the next round should know: Deviations and accepted ✗, pointing to their cards.
 3. The Log's `Observed:` and `outside round:` lines, as two lists, verbatim with their dates. Whether any of them goes into the next round is the user's call, raised in `research-proposal`.
-4. The next step: `research-proposal` on `proposals/<name>/`; `round-N.progress.md` is the outcomes with the files that hold them.
+4. The next step: `research-proposal` on `proposals/<name>/`; `round-N.progress.md` is the outcomes with the files that hold them. When the outcomes are enough for a paper, the next step is `build-paper-argument` instead.
