@@ -18,6 +18,7 @@ The vocabulary of the sci-skills plugin. These meanings apply when working with 
 - **Verification**: The work that produces the Grounds of one or more Conjectures, such as a simulation, a measurement or a plot of existing data. It is costly when it needs a commitment from the user (an allocation, new data, days of work) and cheap when it can be run and rerun with what is at hand.
 - **Round**: One cycle of research on one goal: a proposal of Conjectures with the Verifications chosen to decide them, the work that produces their Grounds, and the user's judgement of each Conjecture as held, failed or not done. The next round starts from those judgements; earlier rounds stay as they are.
 - **Short**: An idea-independent summary of one paper of an Argument Library (object, kind of work, data and methods including tools used or cited, quantities, End Arguments), used to decide which papers to read in full.
+- **End rank**: The weight the author gives each End Argument of the paper's own Argument DAG: main (exactly one), secondary or side. Every End carries a **Sentence**: the one line of a card written verbatim into the paper, in the abstract and the conclusions.
 
 ## Relationships
 - An argument cannot stand without Claim, Grounds and Warrant. To adapt to practical situations and address counterarguments, Backing, Qualifier and Rebuttal are added.

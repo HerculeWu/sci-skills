@@ -1,0 +1,3 @@
+# Each version of a paper is recompiled from its sources
+
+`write-paper` writes every version afresh from the paper's Argument DAG, a freshly generated outline and the library, by fresh agents that do not read earlier drafts; it never patches the previous version's text. A fault found in review is repaired where its source is: the canvas (by the author), a check that catches it next time, or the outline of that version. Patching was tried in the project this comes from: fixes made to one version's text reappeared in the next (12 of them between v10 and v11), and a patched draft tests only the patch, while a fresh compile tests the method. Once the author declares a version final, the text is the author's and `write-paper` only checks it.
