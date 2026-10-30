@@ -25,6 +25,9 @@ export const OPTIONAL = ["figure", "table", "context"];
 const VALUES = { role: ["headline", "support", "aside"], tone: ["flat", "hedged"], voice: ["we", "passive", "free"] };
 const ABSTRACT = /^abstract$/i;
 const CONCLUSIONS = /conclusion/i;
+// the abstract and the conclusions are found by the section's group or its title, whatever the field calls its groups
+const isAbstract = (sec) => ABSTRACT.test(sec?.group ?? "") || ABSTRACT.test(sec?.title ?? "");
+const isConclusions = (sec) => CONCLUSIONS.test(sec?.group ?? "") || CONCLUSIONS.test(sec?.title ?? "");
 const ENTRY_ID = /^[a-z0-9-]+\.[a-z0-9.-]+$/;
 const BUDGET = /^(\d+)\s*[–-]\s*(\d+)$/;
 const NONE = new Set(["—", "-", "none", ""]);
@@ -147,7 +150,8 @@ export function lintOutline(outline, { canvas, fields = {}, kindsByGroup = new M
 
   for (const sec of sections) {
     if (!sec.group) problems.push(`line ${sec.line}: section ${q(sec.title)} names no group (\`## <title> · <group>\`)`);
-    else if (kindsByGroup.size > 0 && !kindsByGroup.has(sec.group.toLowerCase())) problems.push(`line ${sec.line}: group ${q(sec.group)} is not in the Kinds block`);
+    // the abstract's parts are the journal's (paper.md), not kinds of the field's paragraphs
+    else if (kindsByGroup.size > 0 && !isAbstract(sec) && !kindsByGroup.has(sec.group.toLowerCase())) problems.push(`line ${sec.line}: group ${q(sec.group)} is not in the Kinds block`);
     const headlines = sec.entries.filter((e) => e.fields.role === "headline").length;
     if (sec.entries.length > 0 && headlines !== 1) problems.push(`section ${q(sec.title)}: ${headlines} headline entries; exactly one is`);
   }
@@ -217,21 +221,21 @@ export function lintOutline(outline, { canvas, fields = {}, kindsByGroup = new M
   for (const id of cards.keys()) {
     if (!id.startsWith("n-") && !listed.has(id)) problems.push(`card ${q(id)} is listed by no entry`);
   }
-  const inGroup = (id, re, part) =>
-    (listed.get(id) ?? []).some((l) => re.test(l.entry.section?.group ?? "") && (!part || l.parts.length === 0 || l.parts.includes(part)));
+  const inGroup = (id, inSection, part) =>
+    (listed.get(id) ?? []).some((l) => inSection(l.entry.section) && (!part || l.parts.length === 0 || l.parts.includes(part)));
   for (const id of [...cards.keys()].filter((id) => id.startsWith("e-"))) {
-    if (!inGroup(id, ABSTRACT)) problems.push(`End ${q(id)} is listed by no Abstract entry`);
-    if (!inGroup(id, CONCLUSIONS)) problems.push(`End ${q(id)} is listed by no Conclusions entry`);
+    if (!inGroup(id, isAbstract)) problems.push(`End ${q(id)} is listed by no Abstract entry`);
+    if (!inGroup(id, isConclusions)) problems.push(`End ${q(id)} is listed by no Conclusions entry`);
   }
   const main = mainEnd(canvas);
   if (main) {
-    if (!inGroup(main.id, ABSTRACT, "Sentence")) problems.push(`the main End ${q(main.id)}'s Sentence is listed by no Abstract entry`);
-    if (!inGroup(main.id, CONCLUSIONS, "Sentence")) problems.push(`the main End ${q(main.id)}'s Sentence is listed by no Conclusions entry`);
+    if (!inGroup(main.id, isAbstract, "Sentence")) problems.push(`the main End ${q(main.id)}'s Sentence is listed by no Abstract entry`);
+    if (!inGroup(main.id, isConclusions, "Sentence")) problems.push(`the main End ${q(main.id)}'s Sentence is listed by no Conclusions entry`);
   }
 
   const limit = Number.parseInt(fields["abstract limit"] ?? "", 10);
   if (Number.isFinite(limit)) {
-    const sum = entries.filter((e) => ABSTRACT.test(e.section?.group ?? "")).reduce((s, e) => s + Number(BUDGET.exec(e.fields.budget ?? "")?.[2] ?? 0), 0);
+    const sum = entries.filter((e) => isAbstract(e.section)).reduce((s, e) => s + Number(BUDGET.exec(e.fields.budget ?? "")?.[2] ?? 0), 0);
     if (sum > limit) problems.push(`the Abstract entries' upper budgets sum to ${sum} words; the journal's limit is ${limit}`);
   }
   return problems;
@@ -359,12 +363,13 @@ export function checkText({ units: us, outline, canvas, fields = {}, sources = [
   }
 
   // budgets and the journal's limit
-  const group = (u) => entries.get(u.id)?.section?.group ?? "";
+  const sec = (u) => entries.get(u.id)?.section;
+  const group = (u) => sec(u)?.group ?? sec(u)?.title ?? "";
   let abstractWords = 0;
   for (const u of us) {
     const e = entries.get(u.id);
     const w = wordCount(u.prose);
-    if (ABSTRACT.test(group(u))) abstractWords += w;
+    if (isAbstract(sec(u))) abstractWords += w;
     const m = BUDGET.exec(e?.fields.budget ?? "");
     if (m && !u.notWritten && (w < Number(m[1]) || w > Number(m[2]))) problems.push(`${u.file}: paragraph ${q(u.id)} has ${w} words; its budget is ${m[1]}–${m[2]}`);
   }
@@ -379,7 +384,7 @@ export function checkText({ units: us, outline, canvas, fields = {}, sources = [
   for (const edge of canvas.edges ?? []) if (endIds.has(edge.toNode) && edge.label === "Grounds") endSide.add(edge.fromNode);
   const endNumbers = sourceNumbers([...endSide].filter((id) => cards.has(id)).map((id) => ({ text: cards.get(id).text })));
   for (const u of us) {
-    const closing = ABSTRACT.test(group(u)) || CONCLUSIONS.test(group(u));
+    const closing = isAbstract(sec(u)) || isConclusions(sec(u));
     const missing = [...new Set(numbersOf(u.prose).filter((n) => !stated(n, all)).map((n) => n.n))];
     if (missing.length > 0) problems.push(`${u.file}: paragraph ${q(u.id)} states ${missing.join(", ")}, found on no card and in no file the canvas or the outline names`);
     if (closing) {
@@ -390,7 +395,7 @@ export function checkText({ units: us, outline, canvas, fields = {}, sources = [
 
   // End Qualifiers travel with their Claims into the abstract and the conclusions
   for (const u of us) {
-    if (!ABSTRACT.test(group(u)) && !CONCLUSIONS.test(group(u))) continue;
+    if (!isAbstract(sec(u)) && !isConclusions(sec(u))) continue;
     for (const ref of cardList(entries.get(u.id)?.fields.cards)) {
       const card = cards.get(ref.id);
       if (!card || !endIds.has(card.id) || (ref.parts.length > 0 && !ref.parts.includes("Qualifier"))) continue;
@@ -434,8 +439,8 @@ export function checkText({ units: us, outline, canvas, fields = {}, sources = [
   const main = mainEnd(canvas);
   const sentence = main ? words(prose(section(main.text, "Sentence") ?? "")).join(" ") : "";
   if (sentence) {
-    for (const [name, re] of [["abstract", ABSTRACT], ["conclusions", CONCLUSIONS]]) {
-      const text = words(us.filter((u) => re.test(group(u))).map((u) => u.prose).join(" ")).join(" ");
+    for (const [name, inSection] of [["abstract", isAbstract], ["conclusions", isConclusions]]) {
+      const text = words(us.filter((u) => inSection(sec(u))).map((u) => u.prose).join(" ")).join(" ");
       if (!text.includes(sentence)) problems.push(`the main End ${q(main.id)}'s Sentence is not in the ${name} word for word`);
     }
   }

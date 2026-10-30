@@ -71,7 +71,7 @@ figure: figures/width.png — caption states the fall
 context: The two masses bracket the clusters observed (data/why.md).
 - State the width of each treatment.
 
-## 5 Conclusions · Conclusions
+## 5 Conclusions · Closing
 #### conclusions.main
 cards: e-dynamics (Sentence, Qualifier)
 kind: SUMMARY
@@ -85,7 +85,7 @@ reader-takeaway: The main sentence.
 - Repeat the main sentence.
 `;
 
-const GUIDE = "# Section guide\n\n## Kinds\n- `RESULTS` (Abstract): the findings.\n- `MODEL` (Methods): the models.\n- `CASE` (Results): a case.\n- `SUMMARY` (Conclusions): what was done.\n";
+const GUIDE = "# Section guide\n\n## Kinds\n- `MODEL` (Methods): the models.\n- `CASE` (Results): a case.\n- `SUMMARY` (Closing): what was done.\n";
 
 const TEXT = {
   "00-abstract.tex": "% outline: abstract.results\n% source: written\nThe treatment changes where a tail lies: the tail lies 26\\,\\% closer to the orbit, for two masses on one eccentric orbit.\n",
@@ -133,7 +133,7 @@ test("paperFields, kinds and cardList read the plugin's formats", () => {
 
 test("parseOutline reads sections with their group, entries with fields and instructions", () => {
   const o = parseOutline(OUTLINE);
-  assert.deepEqual(o.sections.map((s) => [s.title, s.group]), [["Abstract", "Abstract"], ["2 Models", "Methods"], ["3 Width", "Results"], ["5 Conclusions", "Conclusions"]]);
+  assert.deepEqual(o.sections.map((s) => [s.title, s.group]), [["Abstract", "Abstract"], ["2 Models", "Methods"], ["3 Width", "Results"], ["5 Conclusions", "Closing"]]);
   const e = o.entries[2];
   assert.equal(e.id, "results.width");
   assert.equal(e.fields.budget, "10–40");
@@ -219,7 +219,7 @@ test("a number with no source is reported; in the conclusions it must stand on a
     })),
   );
   assert.ok(problems.some((p) => p.includes('"results.width" states 21.7')));
-  assert.ok(problems.some((p) => p.includes('"conclusions.main" (Conclusions) states 40, on no End card')));
+  assert.ok(problems.some((p) => p.includes('"conclusions.main" (Closing) states 40, on no End card')));
 });
 
 test("a percentage may restate a fraction its source gives", () => {

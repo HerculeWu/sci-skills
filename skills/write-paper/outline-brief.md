@@ -16,7 +16,7 @@ You write the outline of a research paper from its argument graph: one entry per
 `vN/outline.md`, `vN/glossary.md`, `vN/OUTLINE-REPORT.md`. `scripts/paper.mjs lint-outline vN/outline.md --root <project>` must pass.
 
 ## The outline
-Headings: `## <Section title> · <group>` for a section, where the group is a section group of the Kinds block (`Abstract`, `Introduction`, …, `Conclusions`); `### <Subsection title>` for a subsection, named by its object; `#### <section>.<name>` for an entry. Fields, one per line, in this order, then the instruction lines:
+Headings: `## <Section title> · <group>` for a section, where the group is a section group of the Kinds block, or `Abstract` for the abstract, whose parts are the journal's; the closing section's title contains "Conclusions", by which the checks find it; `### <Subsection title>` for a subsection, named by its object; `#### <section>.<name>` for an entry. Fields, one per line, in this order, then the instruction lines:
 
 ```
 #### dynamics.width-headline
@@ -36,7 +36,7 @@ context: —
 ```
 
 - `cards`: card ids with the parts the paragraph may draw on (`Sentence` and `title` are parts). The writer reads these parts and no other card. `none` only for a paragraph that carries no claim, such as an outline of the paper.
-- `kind`: a kind of the section's group in the Kinds block. The writer searches the library for this kind first.
+- `kind`: a kind of the section's group in the Kinds block; in the abstract, the journal's part (Context, Aims, …). The writer searches the library for this kind first.
 - `role`: `headline` (exactly one per section: the paragraph the section exists for), `support`, `aside`.
 - `tone`: `flat` for measurements, procedures and definitions; `hedged` for an interpretation or a mechanism.
 - `voice`: `we` for the authors' choices and findings, `passive` for procedures, `free`.
