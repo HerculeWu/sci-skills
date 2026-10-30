@@ -5,7 +5,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { buildQuery, parseArgs, quoteBibcode, readToken, run, toRow, UsageError } from "./ads.mjs";
+import { buildQuery, parseArgs, parseKeyed, quoteBibcode, readToken, rekey, run, toRow, UsageError } from "./ads.mjs";
 
 const TOKEN = "test-token-not-real";
 
@@ -212,4 +212,38 @@ test("run exits 2 with usage on a bad invocation", async () => {
   assert.equal(r.calls.length, 0);
   assert.match(r.stderr, /^error: search takes exactly one query string/);
   assert.match(r.stderr, /usage:/);
+});
+
+// ---------------------------------------------------------------- bibtex
+
+const EXPORTED = "@ARTICLE{2025A&A...703A..47W,\n  author = {{Weis}, L.},\n  doi = {10.1051/0004-6361/202451650},\n}\n\n@ARTICLE{2012MNRAS.420.2700K,\n  author = {{K{\\\"u}pper}, A.},\n}\n";
+
+test("parseKeyed reads key=bibcode pairs, the key defaulting to the bibcode", () => {
+  assert.deepEqual(parseKeyed(["Weis2025=2025A&A...703A..47W", "2012MNRAS.420.2700K"]), [
+    { key: "Weis2025", bibcode: "2025A&A...703A..47W" },
+    { key: "2012MNRAS.420.2700K", bibcode: "2012MNRAS.420.2700K" },
+  ]);
+  assert.throws(() => parseKeyed([]), UsageError);
+  assert.throws(() => parseKeyed(["bad key=2025A&A...703A..47W"]), UsageError);
+  assert.deepEqual(parseArgs(["bibtex", "K=2012MNRAS.420.2700K"]).operands, [{ key: "K", bibcode: "2012MNRAS.420.2700K" }]);
+});
+
+test("rekey replaces only the keys asked for", () => {
+  const out = rekey(EXPORTED, [{ key: "Weis2025", bibcode: "2025A&A...703A..47W" }]);
+  assert.match(out, /^@ARTICLE\{Weis2025,$/m);
+  assert.match(out, /^@ARTICLE\{2012MNRAS\.420\.2700K,$/m);
+});
+
+test("bibtex posts the bibcodes to the export endpoint and prints rekeyed entries", async () => {
+  const { code, stdout, stderr, calls } = await runWith(
+    ["bibtex", "Weis2025=2025A&A...703A..47W", "Kupper2012=2012MNRAS.420.2700K", "2099XXX.....1....Z"],
+    async () => respond(200, { export: EXPORTED }),
+  );
+  assert.equal(code, 0);
+  assert.equal(calls[0].url.pathname, "/v1/export/bibtex");
+  assert.equal(calls[0].init.method, "POST");
+  assert.deepEqual(JSON.parse(calls[0].init.body).bibcode, ["2025A&A...703A..47W", "2012MNRAS.420.2700K", "2099XXX.....1....Z"]);
+  assert.match(stdout, /@ARTICLE\{Weis2025,/);
+  assert.match(stdout, /@ARTICLE\{Kupper2012,/);
+  assert.match(stderr, /no entry for 2099XXX\.\.\.\.\.1\.\.\.\.Z/);
 });

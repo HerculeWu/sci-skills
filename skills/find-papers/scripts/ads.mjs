@@ -8,6 +8,7 @@
  *   node ads.mjs search '<ADS query>' [--rows N]
  *   node ads.mjs similar <bibcode>... [--rows N]
  *   node ads.mjs useful <bibcode>... [--rows N]
+ *   node ads.mjs bibtex [<key>=]<bibcode>...
  *
  * The token is read from ~/.ads/dev_key only and is never printed.
  */
@@ -18,6 +19,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const BASE = "https://api.adsabs.harvard.edu/v1/search/query";
+const EXPORT = "https://api.adsabs.harvard.edu/v1/export/bibtex";
 const FL = "bibcode,title,author,year,pub,citation_count,doi,abstract,score";
 const TIMEOUT_MS = 30_000;
 const MAX_ROWS = 50;
@@ -29,9 +31,10 @@ export const USAGE = `usage:
   ads.mjs search '<ADS query>' [--rows N]     free ADS query, e.g. 'author:"Kroupa, P" abs:"tidal tails"'
   ads.mjs similar <bibcode>... [--rows N]     papers ADS ranks as similar to the given paper(s)
   ads.mjs useful <bibcode>... [--rows N]      references most cited by the given paper(s)
+  ads.mjs bibtex [<key>=]<bibcode>...         BibTeX entries as ADS exports them, keyed <key> where given
 
 rows: 1-${MAX_ROWS} (defaults: search ${DEFAULT_ROWS.search}, similar ${DEFAULT_ROWS.similar}, useful ${DEFAULT_ROWS.useful}); results are in ADS relevance order.
-output: JSONL on stdout, one paper per line; errors on stderr with a non-zero exit.
+output: JSONL on stdout, one paper per line (bibtex: BibTeX); errors on stderr with a non-zero exit.
 token: ~/.ads/dev_key`;
 
 /** A wrong invocation (exit 2), as opposed to a failed request (exit 1). */
@@ -39,6 +42,7 @@ export class UsageError extends Error {}
 
 export function parseArgs(argv) {
   const [command, ...rest] = argv;
+  if (command === "bibtex") return { command, operands: parseKeyed(rest), rows: null };
   if (!(command in DEFAULT_ROWS)) {
     throw new UsageError(command ? `unknown command: ${command}` : "missing command");
   }
@@ -67,6 +71,26 @@ export function parseArgs(argv) {
     throw new UsageError(`${command} needs at least one bibcode`);
   }
   return { command, operands, rows };
+}
+
+/** `[<key>=]<bibcode>` operands as `{ key, bibcode }`; the key defaults to the bibcode. */
+export function parseKeyed(operands) {
+  if (operands.length === 0) throw new UsageError("bibtex needs at least one bibcode");
+  return operands.map((op) => {
+    if (op.startsWith("--")) throw new UsageError(`unknown option: ${op}`);
+    const at = op.indexOf("=");
+    const key = at === -1 ? null : op.slice(0, at);
+    const bibcode = at === -1 ? op : op.slice(at + 1);
+    if (key !== null && !/^[A-Za-z0-9._:-]+$/.test(key)) throw new UsageError(`not a BibTeX key: ${JSON.stringify(key)}`);
+    quoteBibcode(bibcode);
+    return { key: key ?? bibcode, bibcode };
+  });
+}
+
+/** Give each exported entry its key: ADS keys every entry by its bibcode. */
+export function rekey(bibtex, keyed) {
+  const byBibcode = new Map(keyed.map((k) => [k.bibcode, k.key]));
+  return bibtex.replace(/^(@\w+\{)([^,\n]+),/gm, (whole, head, bibcode) => (byBibcode.has(bibcode.trim()) ? `${head}${byBibcode.get(bibcode.trim())},` : whole));
 }
 
 /** Quote one bibcode for a Solr query; bibcodes are identifiers, never query text. */
@@ -131,12 +155,12 @@ function providerMessage(text) {
   return text.replace(/\s+/g, " ").slice(0, 300);
 }
 
-async function query(q, rows, token, fetchImpl) {
-  const url = `${BASE}?${new URLSearchParams({ q, fl: FL, rows: String(rows), sort: "score desc" })}`;
+async function request(url, token, fetchImpl, init = {}) {
   let res;
   try {
     res = await fetchImpl(url, {
-      headers: { Authorization: `Bearer ${token}` },
+      ...init,
+      headers: { Authorization: `Bearer ${token}`, ...(init.headers ?? {}) },
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
   } catch (e) {
@@ -157,6 +181,12 @@ async function query(q, rows, token, fetchImpl) {
     // a 400 here is almost always a malformed query; ADS says why in the body
     throw new Error(`ADS HTTP ${res.status}: ${providerMessage(text)}`);
   }
+  return text;
+}
+
+async function query(q, rows, token, fetchImpl) {
+  const url = `${BASE}?${new URLSearchParams({ q, fl: FL, rows: String(rows), sort: "score desc" })}`;
+  const text = await request(url, token, fetchImpl);
   let docs;
   try {
     docs = JSON.parse(text)?.response?.docs;
@@ -165,6 +195,23 @@ async function query(q, rows, token, fetchImpl) {
   }
   if (!Array.isArray(docs)) throw new Error("ADS returned an unexpected response");
   return docs;
+}
+
+async function exportBibtex(keyed, token, fetchImpl) {
+  const text = await request(EXPORT, token, fetchImpl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ bibcode: keyed.map((k) => k.bibcode) }),
+  });
+  let bibtex;
+  try {
+    bibtex = JSON.parse(text)?.export;
+  } catch {
+    bibtex = undefined;
+  }
+  if (typeof bibtex !== "string") throw new Error("ADS returned an unexpected response");
+  const missing = keyed.filter((k) => !bibtex.includes(`{${k.bibcode},`));
+  return { bibtex: rekey(bibtex, keyed), missing };
 }
 
 /** Run one command; returns the process exit code. Seams exist for offline tests. */
@@ -177,6 +224,12 @@ export async function run(argv, io = {}) {
   }
   try {
     const { command, operands, rows } = parseArgs(argv);
+    if (command === "bibtex") {
+      const { bibtex, missing } = await exportBibtex(operands, readToken(io.home), io.fetchImpl ?? fetch);
+      for (const k of missing) err(`note: ADS exported no entry for ${k.bibcode}\n`);
+      out(bibtex.endsWith("\n") ? bibtex : `${bibtex}\n`);
+      return 0;
+    }
     const q = buildQuery(command, operands);
     const token = readToken(io.home);
     const docs = await query(q, rows, token, io.fetchImpl ?? fetch);

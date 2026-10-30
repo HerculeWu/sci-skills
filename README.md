@@ -15,6 +15,7 @@ A Claude Code plugin with skills for scientific work: find papers, read one pape
 | `implement-proposal` | Carries out one round of a proposal across many sessions: produces the Grounds its Verifications promise, sets each result against its criterion, and records your judgements in a progress file | Only when you call `/sci-skills:implement-proposal` |
 | `build-paper-argument` | Builds the Argument DAG of the paper that reports your judged rounds, as an Obsidian canvas you review before any text is written | Only when you call `/sci-skills:build-paper-argument` |
 | `calibrate-to-library` | Measures how the papers of an Argument Library are written (what each section's paragraphs do, in what order and proportion, the register of their sentences) and leaves the counts, a map of the library's paragraphs by kind, and measuring tools for writing a paper in that field | Only when you call `/sci-skills:calibrate-to-library` |
+| `write-paper` | Writes one version of the paper from its Argument DAG and the library's calibration: an outline, the text copied and imitated from the field's paragraphs, a calibration and review, and a referee's report, each by a fresh agent | Only when you call `/sci-skills:write-paper` |
 
 #### find-papers
 
@@ -93,7 +94,20 @@ Call `/sci-skills:calibrate-to-library` once per Argument Library, with the pape
 - One subagent per paper labels its paragraphs. The agent writes the scripts that split papers and measure style for your library, and checks each against a sample it reads by hand.
 - The result goes under `<library dir>/writing/`: a section guide in counts, the labels, a map from each kind of paragraph to the library paragraphs that do it, the style ranges per group, and the tools.
 
-A typical path through the skills: use `find-papers` to get a reading list, obtain the full texts yourself, run `build-argument-library` on them, then `research-proposal` with your idea, `implement-proposal` for the round you chose, and `research-proposal` again with its outcomes. When the outcomes are enough for a paper, `build-paper-argument` drafts its argument.
+#### write-paper
+
+Call `/sci-skills:write-paper` with the paper's short name once its argument canvas is reviewed and the library is calibrated. The first time, it asks for everything about the paper that only you decide (readership, standard versus own methods, the objects of the Results, names for internal labels, the journal) and keeps it in `papers/<paper>/paper.md`.
+
+Each run writes one version, `papers/<paper>/vN/`, afresh from the canvas and the library, never from the last version:
+
+- An outline agent writes one entry per paragraph (its cards, kind, role, tone, voice, word budget, the question the reader brings to it and what the reader takes away) and a glossary. You can read the questions in order and stop to edit the outline.
+- A text agent writes each paragraph by copying a library paragraph of the same kind and object with its facts replaced, imitating one of the same kind, or writing it, and marks which in a comment.
+- A calibrator reads the text fresh for pronouns, relations, voice and hedges, then reviews it against the outline.
+- A referee who sees only the PDF writes a report; Claude sorts each point into an error in the canvas, an overclaim, a new analysis, or a referee mistake.
+
+`paper.mjs` checks the outline against the canvas and the text against the outline: every number found on a card or a file it names, the End Arguments in the abstract and conclusions with their limits, no card wording copied, budgets and the journal's word limit. Faults go back to their owner: the canvas is yours, the outline is redone each version, and a fault found twice becomes a check. When you are satisfied, copy a version to `papers/<paper>/final/`; from then on the skill only checks it.
+
+A typical path through the skills: use `find-papers` to get a reading list, obtain the full texts yourself, run `build-argument-library` on them, then `research-proposal` with your idea, `implement-proposal` for the round you chose, and `research-proposal` again with its outcomes. When the outcomes are enough for a paper, `build-paper-argument` drafts its argument, `calibrate-to-library` measures how the field writes, and `write-paper` writes it.
 
 ### Glossary
 
@@ -118,13 +132,14 @@ In Claude Code:
 - For `implement-proposal`: a canvas written by `research-proposal`, and project docs that say how its Verifications are done.
 - For `build-paper-argument`: at least one round handed over by `implement-proposal`, and the Argument Library.
 - For `calibrate-to-library`: an Argument Library with its papers' full texts as markdown.
+- For `write-paper`: a reviewed `argument.canvas`, a calibrated library, LaTeX with `latexmk`, and the ADS token (for the bibliography).
 
 ### Development
 
 `AGENTS.md` holds the principles the skills are built on. The scripts have unit tests:
 
 ```bash
-node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-library/scripts/library.test.mjs skills/research-proposal/scripts/proposal.test.mjs skills/implement-proposal/scripts/progress.test.mjs skills/build-paper-argument/scripts/paper-argument.test.mjs
+node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-library/scripts/library.test.mjs skills/research-proposal/scripts/proposal.test.mjs skills/implement-proposal/scripts/progress.test.mjs skills/build-paper-argument/scripts/paper-argument.test.mjs skills/write-paper/scripts/paper.test.mjs
 ```
 
 ## 中文
@@ -142,6 +157,7 @@ node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-librar
 | `implement-proposal` | 跨多个会话实现提案的一轮：产出 Verification 承诺的 Grounds，把每个结果和它的判据摆在一起，把你的判断记进进度文件 | 只在你调用 `/sci-skills:implement-proposal` 时运行 |
 | `build-paper-argument` | 从你判断过的各轮建出报告它们的论文的 Argument DAG，写成 Obsidian canvas，在写任何正文之前由你审 | 只在你调用 `/sci-skills:build-paper-argument` 时运行 |
 | `calibrate-to-library` | 测量 Argument Library 里的论文是怎么写的（各节段落做什么、什么顺序和比例、句子的语体），留下计数、按段落种类索引的 library 段落地图，以及在这个领域写论文时用的测量工具 | 只在你调用 `/sci-skills:calibrate-to-library` 时运行 |
+| `write-paper` | 从论文的 Argument DAG 和 library 的校准写出论文的一版：大纲、从领域段落抄或仿来的正文、校准与审查、审稿报告，每步由一个新 agent 完成 | 只在你调用 `/sci-skills:write-paper` 时运行 |
 
 #### find-papers
 
@@ -220,7 +236,20 @@ node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-librar
 - 每篇论文由一个 subagent 给段落标种类。切分论文和测语体的脚本由 agent 针对你的 library 写，每个都用它亲自读过的样本核对。
 - 结果放在 `<library dir>/writing/`：用计数写成的 section guide、标签、从段落种类到 library 段落的地图、各组的语体范围，以及工具。
 
-几个 skill 的典型用法：先用 `find-papers` 得到阅读清单，自己取得全文，对它们运行 `build-argument-library`，再带着你的想法运行 `research-proposal`，用 `implement-proposal` 实现选定的这一轮，最后带着结果再运行 `research-proposal`。结果够写论文时，用 `build-paper-argument` 建出它的论证。
+#### write-paper
+
+论文的论证 canvas 审好、library 校准完之后，带着论文短名调用 `/sci-skills:write-paper`。第一次运行时，它一次问齐只有你能定的事（读者群、哪些方法是标准的哪些是自己的、Results 的对象、内部标签的名字、期刊），存在 `papers/<论文短名>/paper.md`。
+
+每次运行写一版 `papers/<论文短名>/vN/`，都从 canvas 和 library 重新写，不在上一版上改：
+
+- 大纲 agent 为每段写一个条目（用哪些卡、段落种类、角色、语气、语态、字数预算、读者带着什么问题来、读完带走什么），并写出词表。你可以按顺序读这些问题，停下来改大纲。
+- 正文 agent 逐段写：找同种类同对象的 library 段落抄过来并换掉事实，或仿同种类段落的结构，或直接写，并在注释里标明是哪种。
+- 校准 agent 以新读者的眼光处理代词、句间关系、语态和 hedge，然后对照大纲审查正文。
+- 只看 PDF 的审稿人写一份报告；Claude 把每一条归类为 canvas 里的错、过度主张、需要新分析，或审稿人自己错了。
+
+`paper.mjs` 拿大纲对 canvas、拿正文对大纲做检查：每个数都能在卡片或卡片指名的文件里找到，End Argument 带着它们的限定进摘要和结论，没有照抄卡片原文，段落预算和期刊字数限制。错误回到它的主人那里修：canvas 归你，大纲每版重写，出现两次的错变成一个检查。满意之后把某一版复制到 `papers/<论文短名>/final/`，此后这个 skill 只做检查。
+
+几个 skill 的典型用法：先用 `find-papers` 得到阅读清单，自己取得全文，对它们运行 `build-argument-library`，再带着你的想法运行 `research-proposal`，用 `implement-proposal` 实现选定的这一轮，最后带着结果再运行 `research-proposal`。结果够写论文时，用 `build-paper-argument` 建出它的论证，`calibrate-to-library` 测出领域怎么写，`write-paper` 把它写出来。
 
 ### 词表
 
@@ -245,11 +274,12 @@ node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-librar
 - `implement-proposal` 需要一张由 `research-proposal` 写好的 canvas，以及写明各 Verification 怎么做的项目说明。
 - `build-paper-argument` 需要至少一轮由 `implement-proposal` 交接过的进度文件，以及 Argument Library。
 - `calibrate-to-library` 需要 Argument Library，以及各篇论文的 markdown 全文。
+- `write-paper` 需要审过的 `argument.canvas`、校准过的 library、带 `latexmk` 的 LaTeX，以及 ADS token（用于参考文献）。
 
 ### 开发
 
 `AGENTS.md` 记录了构建这些 skill 的原则。脚本带有单元测试：
 
 ```bash
-node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-library/scripts/library.test.mjs skills/research-proposal/scripts/proposal.test.mjs skills/implement-proposal/scripts/progress.test.mjs skills/build-paper-argument/scripts/paper-argument.test.mjs
+node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-library/scripts/library.test.mjs skills/research-proposal/scripts/proposal.test.mjs skills/implement-proposal/scripts/progress.test.mjs skills/build-paper-argument/scripts/paper-argument.test.mjs skills/write-paper/scripts/paper.test.mjs
 ```

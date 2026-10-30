@@ -16,7 +16,7 @@ Opens with the vocabulary, one line per kind, in this form, so that a lint can r
 - `CASE` (Results): one representative model or object worked through in full. Example: `Gieles2021 §3 ¶1`.
 ```
 
-The word in parentheses is the section group the kind belongs to; a kind used in several groups is listed once per group. Then, for each group of papers and each section: what the library does, as counts with the number of papers they rest on; then the parts in their order, each naming its kinds. A count resting on fewer papers than makes a pattern says so.
+The word in parentheses is the section group the kind belongs to, in the field's own section names; a kind used in several section groups is listed once per group. Two names are fixed, because `write-paper` finds the abstract and the closing summary by them: `Abstract`, and a group whose name contains `Conclusions`. Then, for each group of papers and each section: what the library does, as counts with the number of papers they rest on; then the parts in their order, each naming its kinds. A count resting on fewer papers than makes a pattern says so.
 
 ## labels/<Key>.json
 ```json
