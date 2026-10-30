@@ -1,7 +1,7 @@
 ---
 name: implement-proposal
 description: Carry out one Round of a proposal written by research-proposal, across many sessions -- produce the Grounds its Verifications promise, set each result against its criterion, and record the user's judgements in a progress file next to the canvas.
-disable-model-invocation: false
+disable-model-invocation: true
 ---
 # implement-proposal
 Carry out one **Round** of a proposal: produce the Grounds that the Verifications on `round-N.canvas` promise, hand each Conjecture's result to the user set against its criterion, and record the user's judgement. A round spans many sessions -- allocations, runs that take days, Needs ✗ to settle -- so this skill runs once at the start of each session: orient, agree on what this session does, carry it to a pause point, record it.
