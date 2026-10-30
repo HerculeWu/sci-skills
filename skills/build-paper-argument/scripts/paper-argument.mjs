@@ -306,7 +306,8 @@ export function checkArgument(canvas, { judgements = new Map(), library = null, 
       for (const head of ["Sentence", "Reader"]) if (!section(card.text, head)) problems.push(`${where}: no ## ${head}`);
     }
 
-    for (const ref of conjectureRefs(card.text)) {
+    // a judgement named twice on one card is one fact about that card
+    for (const ref of new Map(conjectureRefs(card.text).map((r) => [r.ref, r])).values()) {
       const status = judgements.get(ref.ref);
       if (status === undefined) problems.push(`${where}: cites ${ref.ref}, which no progress record holds`);
       else if (!CLAIMABLE.includes(status)) problems.push(`${where}: cites ${ref.ref}, which is ${status}; only held and failed Conjectures enter the paper`);
