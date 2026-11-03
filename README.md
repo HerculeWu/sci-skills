@@ -14,6 +14,7 @@ A Claude Code plugin with skills for scientific work: find papers, read one pape
 | `research-proposal` | Turns a vague research idea into a proposal drawn from an Argument Library: one layer of Conjectures, each with the Verification that would decide it, as an Obsidian canvas | Only when you call `/sci-skills:research-proposal` |
 | `implement-proposal` | Carries out one round of a proposal across many sessions: produces the Grounds its Verifications promise, sets each result against its criterion, and records your judgements in a progress file | Only when you call `/sci-skills:implement-proposal` |
 | `build-paper-argument` | Builds the Argument DAG of the paper that reports your judged rounds, as an Obsidian canvas you review before any text is written | Only when you call `/sci-skills:build-paper-argument` |
+| `calibrate-to-library` | Measures how the papers of an Argument Library are written (what each section's paragraphs do, in what order and proportion, the register of their sentences) and leaves the counts, a map of the library's paragraphs by kind, and measuring tools for writing a paper in that field | Only when you call `/sci-skills:calibrate-to-library` |
 
 #### find-papers
 
@@ -84,6 +85,14 @@ Call `/sci-skills:build-paper-argument` when the rounds you have judged are enou
 - Before building the chains, it stops for you to decide the End Arguments: which one is main, the one sentence each leaves in the abstract and the conclusions, and who reads the paper for it. It stops again when the canvas passes its check, for you to review it.
 - Run it again after further rounds: it brings in the new judgements and leaves your own edits to the canvas alone.
 
+#### calibrate-to-library
+
+Call `/sci-skills:calibrate-to-library` once per Argument Library, with the papers' full texts in place. It works out how the field writes, so that a paper written later reads as the field's own.
+
+- It first reads the Shorts and several full texts, then proposes, each with its reason: groups of papers written alike, a vocabulary of paragraph kinds per section, the measures of sentence style worth taking, and the cost. You decide before anything large runs. An earlier calibration ships as a worked example; the agent borrows from it only where it fits your field.
+- One subagent per paper labels its paragraphs. The agent writes the scripts that split papers and measure style for your library, and checks each against a sample it reads by hand.
+- The result goes under `<library dir>/writing/`: a section guide in counts, the labels, a map from each kind of paragraph to the library paragraphs that do it, the style ranges per group, and the tools.
+
 A typical path through the skills: use `find-papers` to get a reading list, obtain the full texts yourself, run `build-argument-library` on them, then `research-proposal` with your idea, `implement-proposal` for the round you chose, and `research-proposal` again with its outcomes. When the outcomes are enough for a paper, `build-paper-argument` drafts its argument.
 
 ### Glossary
@@ -108,6 +117,7 @@ In Claude Code:
 - For `research-proposal`: an Argument Library built by `build-argument-library`, ideally with the papers' full texts next to it.
 - For `implement-proposal`: a canvas written by `research-proposal`, and project docs that say how its Verifications are done.
 - For `build-paper-argument`: at least one round handed over by `implement-proposal`, and the Argument Library.
+- For `calibrate-to-library`: an Argument Library with its papers' full texts as markdown.
 
 ### Development
 
@@ -131,6 +141,7 @@ node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-librar
 | `research-proposal` | 从 Argument Library 出发，把一个模糊的研究想法写成提案：一层 Conjecture，每个挂在能判定它的 Verification 上，写成 Obsidian canvas | 只在你调用 `/sci-skills:research-proposal` 时运行 |
 | `implement-proposal` | 跨多个会话实现提案的一轮：产出 Verification 承诺的 Grounds，把每个结果和它的判据摆在一起，把你的判断记进进度文件 | 只在你调用 `/sci-skills:implement-proposal` 时运行 |
 | `build-paper-argument` | 从你判断过的各轮建出报告它们的论文的 Argument DAG，写成 Obsidian canvas，在写任何正文之前由你审 | 只在你调用 `/sci-skills:build-paper-argument` 时运行 |
+| `calibrate-to-library` | 测量 Argument Library 里的论文是怎么写的（各节段落做什么、什么顺序和比例、句子的语体），留下计数、按段落种类索引的 library 段落地图，以及在这个领域写论文时用的测量工具 | 只在你调用 `/sci-skills:calibrate-to-library` 时运行 |
 
 #### find-papers
 
@@ -201,6 +212,14 @@ node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-librar
 - 建论证链之前，它停下来请你定 End Argument：哪个是主结果、每个在摘要和结论里留下的那一句话、谁为它读这篇论文。canvas 通过检查后再停一次，请你审。
 - 之后的轮次判断完可以再运行：它把新的判断带进来，你对 canvas 的手改不动。
 
+#### calibrate-to-library
+
+每个 Argument Library 调用一次 `/sci-skills:calibrate-to-library`，全文要先放好。它弄清这个领域怎么写论文，让之后写出的论文读起来像这个领域自己的。
+
+- 它先读 Short 和几篇全文，再提出方案并逐项给理由：哪些论文写法相近分成一组、每节段落种类的词汇、值得测的语体指标、大致成本。你决定之后才大规模运行。skill 附带一次早先的校准作为例子，agent 只在适合你的领域时借用。
+- 每篇论文由一个 subagent 给段落标种类。切分论文和测语体的脚本由 agent 针对你的 library 写，每个都用它亲自读过的样本核对。
+- 结果放在 `<library dir>/writing/`：用计数写成的 section guide、标签、从段落种类到 library 段落的地图、各组的语体范围，以及工具。
+
 几个 skill 的典型用法：先用 `find-papers` 得到阅读清单，自己取得全文，对它们运行 `build-argument-library`，再带着你的想法运行 `research-proposal`，用 `implement-proposal` 实现选定的这一轮，最后带着结果再运行 `research-proposal`。结果够写论文时，用 `build-paper-argument` 建出它的论证。
 
 ### 词表
@@ -225,6 +244,7 @@ node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-librar
 - `research-proposal` 需要一个由 `build-argument-library` 建好的 Argument Library，最好全文也放在旁边。
 - `implement-proposal` 需要一张由 `research-proposal` 写好的 canvas，以及写明各 Verification 怎么做的项目说明。
 - `build-paper-argument` 需要至少一轮由 `implement-proposal` 交接过的进度文件，以及 Argument Library。
+- `calibrate-to-library` 需要 Argument Library，以及各篇论文的 markdown 全文。
 
 ### 开发
 
