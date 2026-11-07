@@ -4,19 +4,19 @@ description: Write one version of a paper from its Argument DAG and a calibrated
 disable-model-invocation: true
 ---
 # write-paper
-Write one **version** of a paper: from the paper's Argument DAG (`build-paper-argument`) and the library's calibration (`calibrate-to-library`), fresh agents write an outline, the text, a calibration with a review, and a referee's report. Each version is written afresh from its sources, never patched from the last ([ADR 0001](../../docs/adr/0001-recompile-each-version.md)): a fault found in a version is repaired in the canvas, in the outline, or as a check, and the next version shows whether the repair held.
+Write one **version** of a paper: from the paper's Argument DAG (`build-paper-argument`) and the library's calibration (`calibrate-to-library`), fresh agents write an outline, the text, a calibration with a review, and a referee's report. Each version is written afresh from its sources, never patched from the last ([ADR 0001](../../docs/adr/0001-recompile-each-version.md)): a fault found in a version is repaired in the argument graph, in the outline, or as a check, and the next version shows whether the repair held.
 
 ## Language
 Terms in bold are defined in the sci-skills glossary, loaded at session start. If it is not in your context, read `${CLAUDE_PLUGIN_ROOT}/GLOSSARY.md` first.
 
 Words this skill uses in its own sense:
 - *version*: `papers/<paper>/vN/`, everything one run writes.
-- *outline*: one entry per paragraph, saying what the paragraph does, where, how long and in what posture; the second source of the paper after the canvas.
+- *outline*: one entry per paragraph, saying what the paragraph does, where, how long and in what posture; the second source of the paper after the argument graph.
 - *the four sources*: graph, outline, library, reader; [sources.md](sources.md).
 - *final*: `papers/<paper>/final/`, the version the author chose and now edits by hand.
 
 ## Input
-- `papers/<paper>/argument.canvas`, passing `build-paper-argument`'s check.
+- `papers/<paper>/argument.json`, the paper's Argument DAG, passing `build-paper-argument`'s check.
 - `papers/<paper>/paper.md`: the author's decisions ([paper-md.md](paper-md.md)).
 - `<library dir>/writing/` from `calibrate-to-library`, and the library's full texts.
 - The project's figures, and the notes and proposals the outline may draw context from.
@@ -41,9 +41,9 @@ Every file is in English, whatever language the conversation is in; only the rep
 **Goal**: every input is in place and the author has decided everything `paper.md` asks, before any agent starts.
 
 - `final/` exists: run the final check (below) instead of a version.
-- The canvas passes `build-paper-argument`'s check, and `<library dir>/writing/` exists. When either is missing, name the skill that makes it, and stop.
+- `argument.json` passes `build-paper-argument`'s check, and `<library dir>/writing/` exists. When either is missing, name the skill that makes it, and stop.
 - `paper.md` lacks an item: ask for every missing item at once. An item left open is a default taken silently, which the author sees only afterwards.
-- N is one more than the highest version. Run every project check in `papers/<paper>/checks/` that reads the canvas.
+- N is one more than the highest version. Run every project check in `papers/<paper>/checks/` that reads the argument graph.
 
 ### 1. Outline
 **Goal**: `vN/outline.md` passes `lint-outline`, and the author has seen its questions.
@@ -65,7 +65,7 @@ Dispatch the calibrator with [calibrator-brief.md](calibrator-brief.md).
 
 Dispatch the referee with [referee-brief.md](referee-brief.md), giving it the PDF and nothing else. Then classify each point yourself, tracing it from the PDF to its paragraph, its outline entry and its cards:
 - (a) the graph is wrong; (b) the text claims more than its card; (c) it needs a new analysis; (d) the referee is wrong.
-Recompute every number the referee gives against its source before accepting it: referees miscalculate too. Append the classification to `REFEREE.md`. You change nothing: (a) is the author's to fix in the canvas, (c) a candidate for the next round of `research-proposal`.
+Recompute every number the referee gives against its source before accepting it: referees miscalculate too. Append the classification to `REFEREE.md`. You change nothing: (a) is the author's to fix in argument.json, (c) a candidate for the next round of `research-proposal`.
 
 ### Final check
 When `papers/<paper>/final/` exists, the text is the author's. Run `check` and the project checks on it, build it, and run the referee as in step 4. Report; edit nothing.
@@ -76,7 +76,7 @@ When `papers/<paper>/final/` exists, the text is the author's. Run `check` and t
 **After a version**:
 1. Where `vN/` and its PDF are; pages, words; copied / imitated / written counts.
 2. The referee's points by class, (a) and (c) first.
-3. The review by owner: card faults (the author's canvas), outline faults (this version's outline, or a recurring one for the canvas), text faults (for a check, if they recur).
+3. The review by owner: card faults (the author's argument.json), outline faults (this version's outline, or a recurring one for argument.json), text faults (for a check, if they recur).
 4. Range items left outside, and what the counts decided.
 5. Review findings that also appeared in the previous version: propose a project check for each, written into `papers/<paper>/checks/` when the author agrees.
-6. The next step: the author fixes the canvas and runs another version, or declares one final by copying it to `final/`.
+6. The next step: the author fixes argument.json and runs another version, or declares one final by copying it to `final/`.

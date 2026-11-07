@@ -1,0 +1,1092 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Argument viewer</title>
+<!--
+  A viewer for a paper's argument.json (schema/argument.schema.json). One file, no build step, no server:
+  open it in a browser, then pick or drop an argument.json, and optionally a version's outline.md.
+  The visual design, the layered layout and the label placement follow ArgelanderSpace's argument graph view
+  (bibgraph packages/web/src: argelander.css, graph/LayeredGraphCanvas.tsx, graph/layered/, argument/).
+  IBM Plex comes from Google Fonts when online; offline the system fonts stand in.
+-->
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Serif:wght@400;500;600&display=swap');
+
+:root {
+  --accent-h: 235; --accent-c: 0.13;
+  --radius: 7px; --radius-sm: 5px; --radius-lg: 11px;
+  --fs: 13.5px; --fs-sm: 12px; --fs-xs: 11px;
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SF Mono', Menlo, Consolas, monospace;
+  --font-serif: 'IBM Plex Serif', Georgia, serif;
+  --shadow-1: 0 1px 2px rgba(0,0,0,.18), 0 1px 1px rgba(0,0,0,.10);
+  --shadow-pop: 0 18px 50px -12px rgba(0,0,0,.55), 0 4px 12px -4px rgba(0,0,0,.35);
+}
+[data-theme="dark"] {
+  --bg: oklch(0.165 0.006 260); --bg-deep: oklch(0.135 0.006 260);
+  --surface: oklch(0.196 0.006 260); --surface-2: oklch(0.225 0.007 260);
+  --panel: oklch(0.185 0.006 260); --hover: oklch(0.255 0.008 260); --active: oklch(0.295 0.010 260);
+  --border: oklch(0.285 0.008 260); --border-soft: oklch(0.245 0.007 260);
+  --text: oklch(0.93 0.005 260); --text-dim: oklch(0.70 0.008 260); --text-faint: oklch(0.54 0.008 260);
+  --accent: oklch(0.72 var(--accent-c) var(--accent-h)); --accent-fg: oklch(0.18 0.02 var(--accent-h));
+  --accent-soft: oklch(0.40 0.07 var(--accent-h) / 0.30); --accent-line: oklch(0.62 0.10 var(--accent-h));
+  --warn: oklch(0.80 0.12 78); --danger: oklch(0.70 0.15 25);
+  --cg-l: 0.70; --cg-c: 0.135; --cg-border: oklch(0.90 0.015 260);
+  color-scheme: dark;
+}
+[data-theme="light"] {
+  --bg: oklch(0.975 0.003 260); --bg-deep: oklch(0.945 0.004 260);
+  --surface: oklch(1 0 0); --surface-2: oklch(0.985 0.003 260);
+  --panel: oklch(0.99 0.002 260); --hover: oklch(0.955 0.004 260); --active: oklch(0.925 0.006 260);
+  --border: oklch(0.895 0.005 260); --border-soft: oklch(0.93 0.004 260);
+  --text: oklch(0.26 0.012 260); --text-dim: oklch(0.48 0.010 260); --text-faint: oklch(0.64 0.008 260);
+  --accent: oklch(0.55 var(--accent-c) var(--accent-h)); --accent-fg: oklch(0.99 0.01 var(--accent-h));
+  --accent-soft: oklch(0.90 0.05 var(--accent-h) / 0.7); --accent-line: oklch(0.60 0.11 var(--accent-h));
+  --warn: oklch(0.62 0.13 70); --danger: oklch(0.56 0.18 25);
+  --cg-l: 0.62; --cg-c: 0.15; --cg-border: oklch(0.32 0.01 260);
+  color-scheme: light;
+}
+/* kinds: Native and End as in ArgelanderSpace; the paper's other kinds take their own hue at the same lightness */
+:root {
+  --k-native: oklch(var(--cg-l) var(--cg-c) 168);
+  --k-intro: oklch(var(--cg-l) 0.025 260);
+  --k-method: oklch(var(--cg-l) var(--cg-c) 75);
+  --k-result: oklch(var(--cg-l) 0.06 250);
+  --k-discussion: oklch(var(--cg-l) var(--cg-c) 350);
+  --k-end: oklch(var(--cg-l) var(--cg-c) var(--accent-h));
+  --k-figure: oklch(var(--cg-l) 0.09 110);
+  --r-grounds: var(--accent-line);
+  --r-warrant: oklch(var(--cg-l) calc(var(--cg-c) + 0.005) 305);
+  --r-backing: var(--text-faint);
+  --r-rebuttal: var(--danger);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { font-family: var(--font-sans); font-size: var(--fs); color: var(--text); background: var(--bg-deep); -webkit-font-smoothing: antialiased; overflow: hidden; display: flex; flex-direction: column; }
+button { font: inherit; color: inherit; cursor: pointer; border: none; background: none; }
+::selection { background: var(--accent-soft); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+* { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.ico { width: 16px; height: 16px; stroke: currentColor; stroke-width: 1.9; fill: none; stroke-linecap: round; stroke-linejoin: round; flex: none; display: block; }
+.ico-sm { width: 14px; height: 14px; }
+.mono { font-family: var(--font-mono); }
+
+/* header */
+.head { height: 56px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border-soft); background: var(--panel); }
+.head-title { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.crumb { font-size: 10.5px; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.crumb b { font-weight: 500; color: var(--accent); }
+.head h1 { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.count { font: 10px var(--font-mono); color: var(--text-faint); white-space: nowrap; margin: 0 4px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 11px; border-radius: var(--radius-sm); font-size: var(--fs-sm); font-weight: 500; color: var(--text-dim); background: var(--surface); border: 1px solid var(--border); white-space: nowrap; transition: background .12s, color .12s; cursor: pointer; }
+.btn:hover { background: var(--hover); color: var(--text); }
+.btn.primary { background: var(--accent); color: var(--accent-fg); border-color: transparent; font-weight: 600; }
+.btn.icon { width: 28px; padding: 0; justify-content: center; }
+.btn.ghost { background: transparent; border-color: transparent; }
+.btn.ghost:hover { background: var(--hover); }
+.btn input { display: none; }
+.search { height: 28px; width: 190px; padding: 0 9px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg); color: var(--text); font: var(--fs-sm) var(--font-sans); }
+.search:focus { outline: none; border-color: var(--accent); }
+.warnline { flex: none; padding: 6px 16px; font-size: var(--fs-sm); color: var(--warn); background: color-mix(in oklch, var(--warn) 9%, var(--panel)); border-bottom: 1px solid var(--border-soft); }
+.warnline[hidden] { display: none; }
+
+/* layout */
+.row { flex: 1; min-height: 0; display: flex; position: relative; }
+.side { width: 300px; flex: none; display: flex; flex-direction: column; overflow: hidden; background: var(--panel); border-right: 1px solid var(--border-soft); }
+.side.folded { width: 34px; }
+.side.folded .side-body, .side.folded .side-title { display: none; }
+.side-head { display: flex; align-items: center; gap: 8px; padding: 8px 8px 6px 14px; }
+.side.folded .side-head { padding: 8px 6px; }
+.side-title { flex: 1; font-size: 10.5px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; color: var(--text-faint); }
+.side-body { overflow: auto; flex: 1; min-height: 0; padding: 2px 4px 14px; }
+.fold { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 5px; color: var(--text-faint); }
+.fold:hover { background: var(--hover); color: var(--text); }
+
+/* outline by conclusion */
+.out-row { display: flex; align-items: center; min-height: 28px; border-radius: var(--radius-sm); }
+.out-row:hover { background: var(--hover); }
+.out-row.sel { background: var(--accent-soft); }
+.out-tw { width: 18px; min-width: 18px; height: 22px; display: grid; place-items: center; color: var(--text-faint); flex: none; }
+.out-title { display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1; text-align: left; padding: 4px 6px 4px 0; font-size: var(--fs-sm); color: var(--text); }
+.out-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.out-loop { color: var(--danger); font-size: 10px; flex: none; }
+.out-group { margin: 12px 8px 4px; font-size: 10.5px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; color: var(--text-faint); }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: none; }
+.dot.ring { box-shadow: 0 0 0 1.5px var(--panel), 0 0 0 2.6px var(--k-end); }
+.dot.square { border-radius: 2px; }
+.chip { font: 500 9.5px var(--font-mono); padding: 1px 5px; border-radius: 4px; border: 1px solid currentColor; white-space: nowrap; flex: none; color: var(--r-grounds); }
+.chip.warrant { color: var(--r-warrant); }
+.chip.backing { color: var(--text-dim); border-style: dashed; }
+.chip.rebuttal { color: var(--r-rebuttal); border-style: dotted; }
+.rank { font: 500 9.5px var(--font-mono); color: var(--k-end); flex: none; }
+
+/* canvas */
+.canvas { flex: 1; min-width: 0; position: relative; overflow: hidden; background: radial-gradient(circle at 50% 42%, var(--bg) 0%, var(--bg-deep) 78%); user-select: none; }
+.canvas.drop::after { content: ""; position: absolute; inset: 10px; border: 2px dashed var(--accent); border-radius: var(--radius-lg); pointer-events: none; }
+#svg { display: block; width: 100%; height: 100%; cursor: grab; touch-action: none; }
+#svg.dragging { cursor: grabbing; }
+.edge-g { transition: opacity .15s; }
+.edge-g.dim { opacity: .22; }
+.edge { fill: none; stroke: var(--border); stroke-width: 1.5; }
+.edge.on { stroke-width: 1.9; }
+.edge.dashed { stroke-dasharray: 6 4; }
+.edge.dotted { stroke-dasharray: 2 4; stroke-linecap: round; }
+.edge-label { font-family: var(--font-mono); font-weight: 500; fill: var(--text); paint-order: stroke; stroke: var(--bg-deep); pointer-events: none; }
+.node { cursor: pointer; transition: opacity .18s; outline: none; }
+.node.dim { opacity: .26; }
+.node-dot { stroke: var(--bg-deep); stroke-width: 1.5; }
+.node:hover .node-dot { filter: brightness(1.12); }
+.node:focus-visible .node-dot { stroke: var(--accent); stroke-width: 2.5; }
+.sel-ring { fill: none; stroke: var(--text); stroke-width: 1.6; opacity: .85; }
+.label { font-family: var(--font-sans); fill: var(--text-dim); paint-order: stroke; stroke: var(--bg-deep); stroke-linejoin: round; }
+.node.sel .label, .node:hover .label { fill: var(--text); }
+.match-ring { fill: none; stroke: var(--warn); stroke-width: 1.6; stroke-dasharray: 3 3; }
+.note { position: absolute; top: 16px; left: 18px; pointer-events: none; max-width: 330px; }
+.note[hidden], .card[hidden] { display: none; }
+.note h3 { font: 500 13px var(--font-sans); color: var(--text-dim); }
+.note p { font-size: 10.5px; line-height: 1.6; color: var(--text-faint); margin-top: 4px; }
+.card { position: absolute; background: color-mix(in oklch, var(--panel) 86%, transparent); backdrop-filter: blur(6px); border: 1px solid var(--border-soft); border-radius: var(--radius); box-shadow: var(--shadow-1); }
+.legend { left: 14px; bottom: 14px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; max-width: calc(100% - 84px); }
+.leg-row { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.leg-item { display: inline-flex; align-items: center; gap: 5px; margin-right: 5px; font-size: 9.5px; color: var(--text-faint); }
+.zoom { right: 14px; bottom: 14px; display: flex; flex-direction: column; gap: 4px; padding: 4px; }
+.zbtn { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 5px; color: var(--text-dim); }
+.zbtn:hover { background: var(--hover); color: var(--text); }
+.zoom-value { font: 9px var(--font-mono); color: var(--text-faint); text-align: center; padding: 2px 0 4px; }
+.tooltip { position: absolute; z-index: 25; width: 300px; max-height: 260px; overflow: hidden; padding: 12px 13px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-pop); pointer-events: none; }
+.tooltip[hidden] { display: none; }
+.tooltip strong { font: 500 12px/1.5 var(--font-sans); display: block; }
+.tip-body { font-size: 11px; line-height: 1.55; color: var(--text-dim); margin-top: 6px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 8; overflow: hidden; }
+.tip-body .md { font-size: 11px; line-height: 1.55; color: var(--text-dim); }
+.tip-body p { margin: 0; }
+.tip-kind { margin-top: 8px; font: 10px var(--font-mono); color: var(--accent); }
+.empty { position: absolute; inset: 0; display: grid; place-items: center; }
+.empty[hidden] { display: none; }
+.empty-card { width: 400px; max-width: calc(100% - 32px); padding: 26px 26px 22px; text-align: center; background: var(--panel); border: 1px solid var(--border-soft); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); }
+.empty-card h2 { font: 600 15px var(--font-sans); margin-bottom: 8px; }
+.empty-card p { font-size: var(--fs-sm); color: var(--text-dim); line-height: 1.6; margin-bottom: 16px; }
+.empty-card .btns { display: flex; gap: 8px; justify-content: center; }
+
+/* reading panel */
+.panel { width: 392px; max-width: 100%; flex: none; border-left: 1px solid var(--border-soft); background: var(--panel); display: flex; flex-direction: column; min-height: 0; }
+.panel[hidden] { display: none; }
+.panel-scroll { padding: 16px 18px 28px; overflow-y: auto; flex: 1; min-height: 0; }
+.panel-head { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
+.badge { font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 5px; white-space: nowrap; }
+.idtag { font: 10.5px var(--font-mono); color: var(--text-faint); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.title { font: 600 19px/1.35 var(--font-serif); overflow-wrap: anywhere; }
+.sec { margin-top: 16px; }
+.sec-head { display: flex; align-items: center; gap: 8px; min-height: 24px; }
+.sec-head h4 { font: 600 10.5px var(--font-mono); letter-spacing: .7px; text-transform: uppercase; color: var(--text-faint); }
+.tag { font: var(--fs-xs) var(--font-mono); color: var(--text-faint); background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: 4px; padding: 1px 6px; }
+.md { color: var(--text); font-size: 13px; line-height: 1.65; overflow-wrap: anywhere; }
+.md p { margin: 3px 0; }
+.md ul { margin: 4px 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
+.md code { font-family: var(--font-mono); font-size: 11px; padding: 1px 5px; border-radius: 4px; background: var(--surface-2); border: 1px solid var(--border-soft); color: var(--text-dim); overflow-wrap: anywhere; }
+.md strong { font-weight: 600; }
+.math { font-family: var(--font-serif); font-style: italic; }
+.sentence { border-left: 2px solid var(--k-end); padding-left: 10px; }
+.sentence .md { font-family: var(--font-serif); font-size: 14px; }
+.ground { margin-top: 6px; padding: 4px 0 4px 10px; border-left: 2px solid var(--border); }
+.ground .src-line { margin-top: 4px; display: flex; align-items: center; gap: 6px; font-size: 10.5px; color: var(--text-faint); font-family: var(--font-mono); }
+.src { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; font: 11px var(--font-mono); padding: 2px 7px; border-radius: 5px; background: var(--surface-2); border: 1px solid var(--border-soft); color: var(--text-dim); overflow-wrap: anywhere; text-align: left; }
+.src.link { color: var(--accent); cursor: pointer; }
+.src.link:hover { background: var(--hover); }
+a.src { text-decoration: none; }
+.src-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.links { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
+.link-row { display: flex; align-items: center; gap: 6px; padding-left: 2px; border-left: 2px solid var(--border); }
+.link-title { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; text-align: left; padding: 5px 6px; border-radius: var(--radius-sm); font-size: var(--fs-sm); color: var(--accent); }
+.link-title span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.link-title:hover { background: var(--hover); }
+.link-title .ico { color: var(--text-faint); }
+.hint { font-size: var(--fs-sm); color: var(--text-faint); line-height: 1.6; }
+.hint.warn { color: var(--warn); }
+.entry { margin-top: 6px; padding: 8px 10px; border: 1px solid var(--border-soft); border-radius: var(--radius-sm); background: var(--surface); }
+.entry-id { font: 500 11px var(--font-mono); color: var(--text); }
+.entry-meta { font-size: 11px; color: var(--text-faint); margin-top: 2px; }
+.entry-take { font-size: var(--fs-sm); color: var(--text-dim); margin-top: 4px; line-height: 1.5; }
+
+@media (max-width: 900px) {
+  .side { display: none; }
+  .panel { position: absolute; right: 0; top: 0; bottom: 0; z-index: 30; box-shadow: var(--shadow-pop); }
+  .search { width: 120px; }
+  .count { display: none; }
+}
+</style>
+</head>
+<body>
+<header class="head">
+  <div class="head-title">
+    <div class="crumb" id="crumb">Argument viewer</div>
+    <h1 id="paperTitle">No graph open</h1>
+  </div>
+  <span class="count" id="count"></span>
+  <input class="search" id="find" type="search" placeholder="Find an id or words…" aria-label="Find an argument">
+  <label class="btn" title="Open a paper's argument.json"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M6 14l1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/></svg>argument.json<input id="pickGraph" type="file" accept=".json,application/json"></label>
+  <label class="btn" title="Open a version's outline.md"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"/></svg>outline.md<input id="pickOutline" type="file" accept=".md,text/markdown,text/plain"></label>
+  <button class="btn icon ghost" id="theme" title="Light or dark" aria-label="Switch between light and dark"></button>
+</header>
+<div class="warnline" id="warnline" hidden></div>
+<div class="row">
+  <nav class="side" id="side" aria-label="Outline by conclusion">
+    <div class="side-head">
+      <span class="side-title">By conclusion</span>
+      <button class="fold" id="fold" title="Fold the outline" aria-label="Fold the outline"></button>
+    </div>
+    <div class="side-body" id="outlineTree"></div>
+  </nav>
+  <div class="canvas" id="stage">
+    <svg id="svg" role="img" aria-label="Argument graph"><defs id="defs"></defs><g id="world"></g></svg>
+    <div class="note" id="note" hidden>
+      <h3>Argument graph</h3>
+      <p>Bottom up: Natives at the bottom, each End where its chain closes. Pick an argument to light the chain that supports it, coloured by role.</p>
+    </div>
+    <div class="card legend" id="legend" hidden></div>
+    <div class="card zoom" id="zoom" hidden>
+      <button class="zbtn" id="zin" title="Zoom in" aria-label="Zoom in"></button>
+      <span class="zoom-value" id="zval">100%</span>
+      <button class="zbtn" id="zout" title="Zoom out" aria-label="Zoom out"></button>
+      <button class="zbtn" id="zfit" title="Fit to window" aria-label="Fit to window"></button>
+    </div>
+    <div class="tooltip" id="tip" hidden></div>
+    <div class="empty" id="empty">
+      <div class="empty-card">
+        <h2>Open a paper's argument graph</h2>
+        <p>Pick <code class="mono">papers/&lt;paper&gt;/argument.json</code>, or drop it anywhere on this page. Drop a version's <code class="mono">outline.md</code> too, to see which entries write each card.</p>
+        <div class="btns"><label class="btn primary">Open argument.json<input id="pickGraph2" type="file" accept=".json,application/json"></label></div>
+      </div>
+    </div>
+  </div>
+  <aside class="panel" id="panel" hidden aria-label="Argument"></aside>
+</div>
+<script>
+"use strict";
+
+// ---------------------------------------------------------------- icons (lucide paths)
+
+const ICON = {
+  "chevron-right": '<path d="m9 18 6-6-6-6"/>',
+  "chevron-down": '<path d="m6 9 6 6 6-6"/>',
+  "panel-left": '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/>',
+  plus: '<path d="M5 12h14M12 5v14"/>',
+  minus: '<path d="M5 12h14"/>',
+  expand: '<path d="m21 21-6-6m6 6v-4.8m0 4.8h-4.8M3 16.2V21m0 0h4.8M3 21l6-6M21 7.8V3m0 0h-4.8M21 3l-6 6M3 7.8V3m0 0h4.8M3 3l6 6"/>',
+  x: '<path d="M18 6 6 18M6 6l12 12"/>',
+  "corner-down-right": '<path d="m15 10 5 5-5 5"/><path d="M4 4v7a4 4 0 0 0 4 4h12"/>',
+  "corner-up-right": '<path d="m15 14 5-5-5-5"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/>',
+  "file-text": '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"/>',
+  "external-link": '<path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2m-7.07-14.07 1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
+  moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+};
+const icon = (name, cls = "ico ico-sm") => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICON[name]}</svg>`;
+document.getElementById("zin").innerHTML = icon("plus");
+document.getElementById("zout").innerHTML = icon("minus");
+document.getElementById("zfit").innerHTML = icon("expand");
+document.getElementById("fold").innerHTML = icon("panel-left");
+
+// ---------------------------------------------------------------- the paper's kinds and roles
+
+const KIND = {
+  native: { name: "Native", color: "var(--k-native)" },
+  intro: { name: "Introduction", color: "var(--k-intro)" },
+  method: { name: "Method", color: "var(--k-method)" },
+  result: { name: "Result", color: "var(--k-result)" },
+  discussion: { name: "Discussion", color: "var(--k-discussion)" },
+  end: { name: "End", color: "var(--k-end)", ringed: true },
+  figure: { name: "Figure", color: "var(--k-figure)", square: true },
+  table: { name: "Table", color: "var(--k-figure)", square: true },
+};
+const ROLES = ["grounds", "warrant", "backing", "rebuttal"];
+const ROLE_NAME = { grounds: "Grounds", warrant: "Warrant", backing: "Backing", rebuttal: "Rebuttal" };
+const ROLE_COLOR = { grounds: "var(--r-grounds)", warrant: "var(--r-warrant)", backing: "var(--r-backing)", rebuttal: "var(--r-rebuttal)" };
+const ROLE_DASH = { backing: "dashed", rebuttal: "dotted" };
+const NEUTRAL = "var(--border)";
+
+// ---------------------------------------------------------------- text measure and wrap (graph/layered/text.ts)
+
+const LABEL_FONT_MAX = 14;
+const LABEL_ZOOM_FLOOR = 0.75;
+const LABEL_EM = 11;     // a label line, in em; ArgelanderSpace's short titles use 9, a paper's titles run to 80 characters
+const LABEL_LINES = 3;
+const WIDE = /[⺀-￿]/;
+const NARROW = new Set([..."ijl.,:;!'|`´’ "]);
+const THIN = new Set([..."frtIJ()[]{}/\\-–\"*“”‘"]);
+const WIDE_UPPER = new Set([..."CDGHNOQU"]);
+const WIDE_SYMBOL = new Set([..."&@%#~+=<>—…±×"]);
+const charUnits = (ch) => {
+  if (WIDE.test(ch)) return 1;
+  if (NARROW.has(ch)) return 0.34;
+  if (THIN.has(ch)) return 0.45;
+  if (ch === "W") return 1.05;
+  if (ch === "M") return 0.95;
+  if (WIDE_UPPER.has(ch)) return 0.84;
+  if (ch === "m" || ch === "w") return 0.95;
+  if (ch >= "A" && ch <= "Z") return 0.72;
+  if (ch >= "a" && ch <= "z") return 0.6;
+  if (ch >= "0" && ch <= "9") return 0.64;
+  if (WIDE_SYMBOL.has(ch)) return 1;
+  return 0.7;
+};
+const textUnits = (s) => [...s].reduce((n, ch) => n + charUnits(ch), 0);
+const monoUnits = (s) => [...s].reduce((n, ch) => n + (WIDE.test(ch) ? 1 : 0.62), 0);
+const TOKEN = /\s+|[^\s⺀-\u{10FFFF}-]*-+|[^\s⺀-\u{10FFFF}-]+|[⺀-\u{10FFFF}]/gu;
+
+function ellipsize(line, max) {
+  const chars = [...line.trimEnd()];
+  if (chars.length && WIDE.test(chars[chars.length - 1])) chars.pop();
+  while (chars.length && textUnits(chars.join("")) + textUnits("…") > max) chars.pop();
+  return chars.join("").trimEnd() + "…";
+}
+/** A label on at most LABEL_LINES lines of `max` em; the last line ends with an ellipsis when the text did not fit. */
+function wrapLabel(s, max = LABEL_EM, maxLines = LABEL_LINES) {
+  const tokens = [];
+  for (const t of s.match(TOKEN) ?? []) {
+    if (!/^\s/.test(t) && textUnits(t) > max) tokens.push(...t);
+    else tokens.push(t);
+  }
+  const lines = [];
+  let cur = "", w = 0, i = 0;
+  for (; i < tokens.length; i++) {
+    const t = tokens[i];
+    const tw = textUnits(t);
+    if (/^\s/.test(t)) { if (cur) { cur += " "; w += charUnits(" "); } continue; }
+    if (w + tw > max && cur) {
+      lines.push(cur.trimEnd());
+      cur = ""; w = 0;
+      if (lines.length === maxLines) break;
+    }
+    cur += t; w += tw;
+  }
+  if (lines.length < maxLines && cur.trim()) lines.push(cur.trim());
+  else if (i < tokens.length) lines[maxLines - 1] = ellipsize(lines[maxLines - 1], max);
+  return lines.map((l) => l.trim());
+}
+const displayLabel = (s) => (String(s ?? "").trim() ? String(s) : "—");
+const labelWidth = (s) => Math.max(...wrapLabel(displayLabel(s)).map(textUnits), 0) * LABEL_FONT_MAX;
+
+// ---------------------------------------------------------------- layered layout (graph/layered/layout.ts)
+
+const ROW_GAP = 150;
+const MIN_SLOT = 112;
+const SLOT_PAD = 66;
+const CIRCLE_INSET = 31;
+const WAYPOINT_SLOT = 64;
+
+/**
+ * Rows bottom to top: nodes pinned `first` on the bottom row, every other node at its longest chain from the bottom,
+ * so each End sits where its chain closes. A cycle-closing edge is ignored for layering only. An edge spanning several
+ * rows gets a waypoint in each row it crosses, so it runs between nodes. Every slot is as wide as its node's label.
+ */
+function layeredLayout(nodes, edgesIn) {
+  const ids = nodes.map((n) => n.id);
+  const pin = new Map(nodes.map((n) => [n.id, n.pin]));
+  const out = new Map(ids.map((i) => [i, []]));
+  const edges = edgesIn.filter((e) => out.has(e.from) && out.has(e.to) && e.from !== e.to);
+  edges.forEach((e, ei) => out.get(e.from).push({ to: e.to, ei }));
+  const state = new Map();
+  const back = new Set();
+  for (const root of ids) {
+    if (state.get(root)) continue;
+    state.set(root, 1);
+    const work = [{ v: root, next: 0 }];
+    while (work.length) {
+      const frame = work[work.length - 1];
+      const succ = out.get(frame.v);
+      if (frame.next < succ.length) {
+        const { to: w, ei } = succ[frame.next++];
+        const s = state.get(w) ?? 0;
+        if (s === 1) back.add(ei);
+        else if (s === 0) { state.set(w, 1); work.push({ v: w, next: 0 }); }
+      } else { state.set(frame.v, 2); work.pop(); }
+    }
+  }
+  const forward = edges.filter((_, ei) => !back.has(ei));
+  const hasFirst = nodes.some((n) => n.pin === "first");
+  const layer = new Map(ids.map((i) => [i, pin.get(i) === "first" || !hasFirst ? 0 : 1]));
+  const indeg = new Map(ids.map((i) => [i, 0]));
+  for (const e of forward) indeg.set(e.to, indeg.get(e.to) + 1);
+  const queue = ids.filter((i) => indeg.get(i) === 0);
+  const fwdOut = new Map(ids.map((i) => [i, []]));
+  for (const e of forward) fwdOut.get(e.from).push(e);
+  for (let head = 0; head < queue.length; head++) {
+    const v = queue[head];
+    for (const e of fwdOut.get(v)) {
+      if (pin.get(e.to) !== "first") layer.set(e.to, Math.max(layer.get(e.to), layer.get(v) + 1));
+      indeg.set(e.to, indeg.get(e.to) - 1);
+      if (indeg.get(e.to) === 0) queue.push(e.to);
+    }
+  }
+  const used = [...new Set(ids.map((i) => layer.get(i)))].sort((a, b) => a - b);
+  for (const i of ids) layer.set(i, used.indexOf(layer.get(i)));
+  const layers = Math.max(used.length, 1);
+  const rows = Array.from({ length: layers }, () => []);
+  for (const i of ids) rows[layer.get(i)].push(i);
+  const nb = new Map(ids.map((i) => [i, []]));
+  const rowOf = new Map(ids.map((i) => [i, layer.get(i)]));
+  const link = (a, b) => { nb.get(a).push(b); nb.get(b).push(a); };
+  const chains = new Map();
+  const waypoints = new Set();
+  const taken = new Set(ids);
+  for (const e of edges) {
+    const a = layer.get(e.from), b = layer.get(e.to);
+    const step = Math.sign(b - a);
+    let prev = e.from;
+    const chain = [];
+    for (let k = a + step; step !== 0 && k !== b; k += step) {
+      let d = `~${e.id}~${k}`;
+      while (taken.has(d)) d = `~${d}`;
+      taken.add(d); waypoints.add(d); nb.set(d, []); rowOf.set(d, k); rows[k].push(d); chain.push(d);
+      link(prev, d); prev = d;
+    }
+    link(prev, e.to);
+    if (chain.length) chains.set(e.id, chain);
+  }
+  const order = new Map();
+  const index = () => rows.forEach((r) => r.forEach((id, k) => order.set(id, k - (r.length - 1) / 2)));
+  index();
+  for (let sweep = 0; sweep < 8; sweep++) {
+    const seq = sweep % 2 === 0 ? rows.map((_, k) => k) : rows.map((_, k) => rows.length - 1 - k);
+    for (const k of seq) {
+      const bary = new Map(rows[k].map((id) => {
+        const ns = nb.get(id).filter((n) => rowOf.get(n) !== k);
+        return [id, ns.length ? ns.reduce((s, n) => s + order.get(n), 0) / ns.length : order.get(id)];
+      }));
+      rows[k].sort((a, b) => bary.get(a) - bary.get(b));
+      index();
+    }
+  }
+  const lw = new Map(nodes.map((n) => [n.id, n.labelWidth]));
+  const width = (id) => (waypoints.has(id) ? WAYPOINT_SLOT : Math.max(MIN_SLOT, lw.get(id) + SLOT_PAD));
+  const off = (id) => (waypoints.has(id) ? 0 : CIRCLE_INSET - width(id) / 2);
+  const x = new Map();
+  const cx = (id) => x.get(id) + off(id);
+  for (const r of rows) {
+    let c = 0;
+    const xs = r.map((id, i) => { if (i) c += (width(r[i - 1]) + width(id)) / 2; return c; });
+    r.forEach((id, i) => x.set(id, xs[i] - c / 2));
+  }
+  for (let it = 0; it < 14; it++) {
+    for (const k of it % 2 === 0 ? rows.map((_, j) => j) : rows.map((_, j) => rows.length - 1 - j)) {
+      const r = rows[k];
+      if (!r.length) continue;
+      const want = r.map((id) => {
+        const ns = nb.get(id).filter((n) => rowOf.get(n) !== k);
+        return ns.length ? ns.reduce((sum, n) => sum + cx(n), 0) / ns.length - off(id) : x.get(id);
+      });
+      const sep = (i) => (width(r[i - 1]) + width(r[i])) / 2;
+      const f = [...want], b = [...want];
+      for (let i = 1; i < r.length; i++) f[i] = Math.max(f[i], f[i - 1] + sep(i));
+      for (let i = r.length - 2; i >= 0; i--) b[i] = Math.min(b[i], b[i + 1] - sep(i + 1));
+      r.forEach((id, i) => x.set(id, (f[i] + b[i]) / 2));
+    }
+  }
+  const all = ids.map(cx);
+  const mid = all.length ? (Math.min(...all) + Math.max(...all)) / 2 : 0;
+  const pos = {}, routes = {};
+  for (const i of ids) pos[i] = { x: cx(i) - mid, y: -layer.get(i) * ROW_GAP };
+  for (const [key, chain] of chains) routes[key] = chain.map((d) => ({ x: x.get(d) - mid, y: -rowOf.get(d) * ROW_GAP }));
+  return { pos, routes, layers };
+}
+
+// ---------------------------------------------------------------- edge curves (graph/layered/geometry.ts)
+
+const cubic = (a, c1, c2, b, t) => {
+  const u = 1 - t, k0 = u * u * u, k1 = 3 * u * u * t, k2 = 3 * u * t * t, k3 = t * t * t;
+  return { x: k0 * a.x + k1 * c1.x + k2 * c2.x + k3 * b.x, y: k0 * a.y + k1 * c1.y + k2 * c2.y + k3 * b.y };
+};
+const quad = (a, c, b, t) => {
+  const u = 1 - t;
+  return { x: u * u * a.x + 2 * u * t * c.x + t * t * b.x, y: u * u * a.y + 2 * u * t * c.y + t * t * b.y };
+};
+function edgePath(p, q, r1, r2, way, shift) {
+  const samples = [];
+  if (!way.length && Math.abs(q.y - p.y) < 44) {
+    const dx = q.x - p.x, dy = q.y - p.y, d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d;
+    const a = { x: p.x + ux * r1, y: p.y + uy * r1 }, b = { x: q.x - ux * r2, y: q.y - uy * r2 };
+    const c = { x: (a.x + b.x) / 2 - uy * (30 + shift), y: (a.y + b.y) / 2 + ux * (30 + shift) - 26 };
+    for (let t = 0.05; t < 0.98; t += 0.05) samples.push(quad(a, c, b, t));
+    return { d: `M${a.x},${a.y} Q${c.x},${c.y} ${b.x},${b.y}`, samples };
+  }
+  const s0 = Math.sign((way[0] ?? q).y - p.y) || -1;
+  const sN = Math.sign(q.y - (way[way.length - 1] ?? p).y) || -1;
+  const seq = [{ x: p.x, y: p.y + s0 * r1 }, ...way.map((w) => ({ x: w.x + shift, y: w.y })), { x: q.x, y: q.y - sN * r2 }];
+  const bow = way.length ? 0 : (s0 > 0 ? 72 : 0) + shift;
+  let d = `M${seq[0].x},${seq[0].y}`;
+  for (let i = 0; i + 1 < seq.length; i++) {
+    const u = seq[i], w = seq[i + 1], my = (u.y + w.y) / 2;
+    const c1 = { x: u.x + bow, y: my }, c2 = { x: w.x + bow, y: my };
+    d += ` C${c1.x},${c1.y} ${c2.x},${c2.y} ${w.x},${w.y}`;
+    for (let t = 0.05; t < 0.98; t += 0.05) samples.push(cubic(u, c1, c2, w, t));
+  }
+  return { d, samples };
+}
+function pairFan(edges) {
+  const key = (e) => `${e.from}\u0001${e.to}`;
+  const total = new Map();
+  for (const e of edges) total.set(key(e), (total.get(key(e)) ?? 0) + 1);
+  const seen = new Map();
+  return edges.map((e) => {
+    const k = key(e), index = seen.get(k) ?? 0;
+    seen.set(k, index + 1);
+    return { index, total: total.get(k) };
+  });
+}
+
+// ---------------------------------------------------------------- label placement (graph/layered/placement.ts)
+
+const boxesHit = (a, o) => a.l < o.r && a.r > o.l && a.t < o.b && a.b > o.t;
+const SIDES = ["right", "below", "left", "above"];
+const BIAS = { right: 0, below: 1.5, left: 2.5, above: 3.5 };
+function labelBox(at, lines, side, fs, radius) {
+  const w = Math.max(...lines.map(textUnits), 0) * fs, h = lines.length * fs * 1.22, gx = radius + 9, gy = radius + 5;
+  const l = side === "right" ? at.x + gx : side === "left" ? at.x - gx - w : at.x - w / 2;
+  const t = side === "below" ? at.y + gy : side === "above" ? at.y - gy - h : at.y - h / 2;
+  return { l, r: l + w, t, b: t + h };
+}
+function placeNodeLabels(nodes, { fs, radius, edgePoints }) {
+  const nodeBoxes = new Map();
+  const placed = new Map();
+  for (const n of nodes) {
+    nodeBoxes.set(n.id, { l: n.at.x - radius - 5, r: n.at.x + radius + 5, t: n.at.y - radius - 5, b: n.at.y + radius + 5 });
+    placed.set(n.id, { side: "right", box: labelBox(n.at, n.lines, "right", fs, radius) });
+  }
+  for (let pass = 0; pass < 2; pass++) {
+    for (const n of nodes) {
+      let best = "right", bestCost = Infinity;
+      for (const side of SIDES) {
+        const k = labelBox(n.at, n.lines, side, fs, radius);
+        let cost = BIAS[side];
+        for (const [id, o] of nodeBoxes) if (id !== n.id && boxesHit(k, o)) cost += 60;
+        for (const [id, o] of placed) if (id !== n.id && boxesHit(k, o.box)) cost += 40;
+        for (const q of edgePoints) if (q.x > k.l && q.x < k.r && q.y > k.t && q.y < k.b) cost += 2;
+        if (cost < bestCost) { bestCost = cost; best = side; }
+      }
+      placed.set(n.id, { side: best, box: labelBox(n.at, n.lines, best, fs, radius) });
+    }
+  }
+  return placed;
+}
+const SPOTS = [0.5, 0.38, 0.62, 0.26, 0.74, 0.16, 0.84];
+function placeEdgeLabels(wanted, obstacles, fs) {
+  const boxes = [...obstacles];
+  const at = new Map();
+  for (const g of wanted) {
+    if (!g.samples.length) continue;
+    const w = monoUnits(g.text) * fs + 4, h = fs * 1.3;
+    const box = (c) => ({ l: c.x - w / 2, r: c.x + w / 2, t: c.y - h / 2, b: c.y + h / 2 });
+    const cands = SPOTS.map((f) => g.samples[Math.min(g.samples.length - 1, Math.floor(f * g.samples.length))]);
+    const pick = cands.find((c) => !boxes.some((o) => boxesHit(box(c), o))) ?? cands[0];
+    at.set(g.id, pick);
+    boxes.push(box(pick));
+  }
+  return at;
+}
+
+// ---------------------------------------------------------------- state
+
+const S = {
+  graph: null,        // argument.json
+  nodes: new Map(),   // id → argument or figure (figures carry isFigure)
+  edges: [],          // with id
+  layout: null,
+  pos: {},
+  outline: null,      // outline.md entries
+  outlineName: "",
+  selected: null,
+  hover: null,
+  view: null,         // { tx, ty, k }
+  auto: true,         // the view is still the automatic fit
+  open: new Map(),    // outline rows the user toggled
+  find: "",
+};
+const R = 10;
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const titleOf = (id) => { const n = S.nodes.get(id); return n ? (n.isFigure ? n.shows : n.title) : id; };
+
+/** Markdown enough for card text: paragraphs, `- ` lists, `code`, **bold**, *italic*, $math$. */
+function md(text) {
+  const inline = (s) => esc(s)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/(^|[\s(])\*([^*\s][^*]*)\*/g, "$1<em>$2</em>")
+    .replace(/\$([^$]+)\$/g, '<span class="math">$1</span>');
+  const blocks = [];
+  let list = null, para = [];
+  const flush = () => { if (para.length) blocks.push(`<p>${inline(para.join(" "))}</p>`); para = []; };
+  for (const line of String(text ?? "").split("\n")) {
+    const item = /^\s*[-*]\s+(.*)$/.exec(line);
+    if (item) { flush(); if (!list) { list = []; blocks.push(list); } list.push(item[1]); continue; }
+    if (!line.trim()) { flush(); list = null; continue; }
+    if (list && /^\s+/.test(line)) { list[list.length - 1] += ` ${line.trim()}`; continue; }
+    list = null;
+    para.push(line.trim());
+  }
+  flush();
+  return `<div class="md">${blocks.map((b) => (Array.isArray(b) ? `<ul>${b.map((i) => `<li>${inline(i)}</li>`).join("")}</ul>` : b)).join("")}</div>`;
+}
+
+// ---------------------------------------------------------------- opening files
+
+function warn(text) {
+  const el = $("warnline");
+  el.hidden = !text;
+  el.textContent = text ?? "";
+}
+const counts = () => {
+  const g = S.graph;
+  return `${g.arguments.length} arguments · ${g.figures.length} figures · ${g.edges.length} edges${S.outline ? ` · ${S.outline.length} outline entries` : ""}`;
+};
+
+function loadGraph(text, name) {
+  let g;
+  try { g = JSON.parse(text); } catch { return warn(`${name}: not valid JSON.`); }
+  if (!g || !Array.isArray(g.arguments)) return warn(`${name}: no "arguments" array; is this an argument.json?`);
+  g.figures = Array.isArray(g.figures) ? g.figures : [];
+  g.edges = Array.isArray(g.edges) ? g.edges : [];
+  S.graph = g;
+  S.nodes = new Map([...g.arguments.map((a) => ({ ...a })), ...g.figures.map((f) => ({ ...f, isFigure: true }))].map((n) => [n.id, n]));
+  S.edges = g.edges.filter((e) => S.nodes.has(e.from) && S.nodes.has(e.to)).map((e) => ({ ...e, id: JSON.stringify([e.from, e.to, e.role]) }));
+  const notes = [];
+  if (g.version !== 1) notes.push(`version ${g.version}; this viewer reads version 1`);
+  const lost = g.edges.length - S.edges.length;
+  if (lost) notes.push(`${lost} edge${lost > 1 ? "s name" : " names"} no argument or figure`);
+  warn(notes.length ? `${name}: ${notes.join("; ")}.` : null);
+  S.layout = layeredLayout(
+    [...S.nodes.values()].map((n) => ({ id: n.id, pin: n.kind === "native" || n.isFigure ? "first" : undefined, labelWidth: labelWidth(titleOf(n.id)) })),
+    S.edges,
+  );
+  S.pos = S.layout.pos;
+  S.selected = null; S.hover = null; S.open = new Map(); S.auto = true;
+  $("crumb").innerHTML = `${esc(name)} · <b>${esc(g.paper?.id ?? "")}</b>`;
+  $("paperTitle").textContent = g.paper?.title ?? name;
+  document.title = `${g.paper?.id ?? "Argument"} · argument viewer`;
+  $("count").textContent = counts();
+  $("empty").hidden = true;
+  for (const id of ["note", "legend", "zoom"]) $(id).hidden = false;
+  renderLegend();
+  renderOutline();
+  renderPanel();
+  fit();
+}
+
+function loadOutline(text, name) {
+  S.outline = parseOutline(text);
+  S.outlineName = name;
+  if (S.graph) $("count").textContent = counts();
+  renderPanel();
+}
+
+/** The outline's entries: `## Title · Group` sections and `#### id` entries with their `name: value` fields. */
+function parseOutline(text) {
+  const entries = [];
+  let sec = null, entry = null;
+  for (const raw of text.split("\n")) {
+    const line = raw.trimEnd();
+    if (/^##\s/.test(line) && !/^###/.test(line)) {
+      const head = line.replace(/^##\s+/, ""), at = head.lastIndexOf(" · ");
+      sec = { title: at === -1 ? head : head.slice(0, at), group: at === -1 ? "" : head.slice(at + 3) };
+      entry = null;
+    } else if (/^####\s/.test(line)) {
+      entry = { id: line.replace(/^####\s+/, "").trim(), section: sec, fields: {}, instructions: [] };
+      entries.push(entry);
+    } else if (/^###\s/.test(line)) entry = null;
+    else if (entry && /^-\s/.test(line)) entry.instructions.push(line.slice(2).trim());
+    else if (entry && !entry.instructions.length && /^[a-z-]+:/.test(line)) {
+      const at = line.indexOf(":");
+      entry.fields[line.slice(0, at)] = line.slice(at + 1).trim();
+    }
+  }
+  for (const e of entries) e.cards = [...(e.fields.cards ?? "").matchAll(/([a-z]-[a-z0-9-]+)\s*(?:\(([^)]*)\))?/g)].map((m) => ({ id: m[1], parts: m[2] ? m[2].split(",").map((p) => p.trim()) : [] }));
+  return entries;
+}
+
+async function openFiles(files) {
+  for (const f of files) {
+    const text = await f.text();
+    if (/\.json$/i.test(f.name) || /^\s*\{/.test(text)) loadGraph(text, f.name);
+    else loadOutline(text, f.name);
+  }
+}
+
+// ---------------------------------------------------------------- the outline by conclusion (argument/outline.ts)
+
+const OPEN_DEPTH = 2;
+function buildOutline() {
+  const supports = new Map();
+  for (const e of S.edges) {
+    if (!supports.has(e.to)) supports.set(e.to, []);
+    supports.get(e.to).push({ from: e.from, role: e.role });
+  }
+  const walk = (out, id, role, path, depth, parentKey) => {
+    const key = `${parentKey}/${role ?? "-"}:${id}`;
+    const cycle = path.includes(id);
+    const kids = cycle ? [] : supports.get(id) ?? [];
+    const open = kids.length > 0 && (S.open.get(key) ?? depth < OPEN_DEPTH);
+    out.push({ key, id, role, depth, cycle, expandable: kids.length > 0, open });
+    if (open) for (const k of kids) walk(out, k.from, k.role, [...path, id], depth + 1, key);
+  };
+  const rank = { main: 0, secondary: 1, side: 2 };
+  const ends = S.graph.arguments.filter((a) => a.kind === "end").sort((a, b) => (rank[a.rank] ?? 3) - (rank[b.rank] ?? 3));
+  const endRows = [];
+  for (const a of ends) walk(endRows, a.id, null, [], 0, "end");
+  // what reaches no End is its own group
+  const reaches = new Set(ends.map((a) => a.id));
+  for (let grew = true; grew; ) { grew = false; for (const e of S.edges) if (reaches.has(e.to) && !reaches.has(e.from)) grew = reaches.add(e.from); }
+  const orphanRows = [];
+  for (const id of S.nodes.keys()) if (!reaches.has(id)) walk(orphanRows, id, null, [], 0, "orphan");
+  return { endRows, orphanRows };
+}
+
+function kindDot(n) {
+  const k = KIND[n.kind] ?? KIND.intro;
+  return `<span class="dot${k.ringed ? " ring" : ""}${k.square ? " square" : ""}" style="background:${k.color}"></span>`;
+}
+
+function renderOutline() {
+  const { endRows, orphanRows } = buildOutline();
+  const row = (r) => {
+    const n = S.nodes.get(r.id);
+    const title = titleOf(r.id);
+    return `<div class="out-row${r.id === S.selected ? " sel" : ""}" style="padding-left:${4 + r.depth * 14}px">
+      ${r.expandable ? `<button class="out-tw" data-toggle="${esc(r.key)}" aria-expanded="${r.open}" aria-label="${r.open ? "Collapse" : "Expand"}">${icon(r.open ? "chevron-down" : "chevron-right")}</button>` : `<span class="out-tw"></span>`}
+      <button class="out-title" data-go="${esc(r.id)}" title="${esc(`${r.id} · ${title}`)}">
+        ${r.role ? `<span class="chip ${r.role}">${ROLE_NAME[r.role]}</span>` : ""}
+        ${kindDot(n)}
+        <span class="out-text">${esc(title)}</span>
+        ${n.rank && !r.role ? `<span class="rank">${esc(n.rank)}</span>` : ""}
+        ${r.cycle ? `<span class="out-loop">cycle</span>` : ""}
+      </button>
+    </div>`;
+  };
+  $("outlineTree").innerHTML = endRows.map(row).join("") + (orphanRows.length ? `<div class="out-group">No path to an End</div>${orphanRows.map(row).join("")}` : "");
+}
+
+$("outlineTree").addEventListener("click", (ev) => {
+  const t = ev.target.closest("[data-toggle]");
+  if (t) {
+    S.open.set(t.dataset.toggle, t.getAttribute("aria-expanded") !== "true");
+    renderOutline();
+    return;
+  }
+  const go = ev.target.closest("[data-go]");
+  if (go) select(go.dataset.go);
+});
+$("fold").addEventListener("click", () => {
+  const side = $("side");
+  side.classList.toggle("folded");
+  $("fold").title = side.classList.contains("folded") ? "Unfold the outline" : "Fold the outline";
+});
+
+// ---------------------------------------------------------------- the canvas
+
+/** Upstream from `id`: the arguments and figures that support it, transitively, and the edges among them. */
+function supportChain(id) {
+  const nodes = new Set([id]);
+  const edges = new Set();
+  const stack = [id];
+  while (stack.length) {
+    const v = stack.pop();
+    for (const e of S.edges) {
+      if (e.to !== v) continue;
+      edges.add(e.id);
+      if (!nodes.has(e.from)) { nodes.add(e.from); stack.push(e.from); }
+    }
+  }
+  return { nodes, edges };
+}
+const near = (a, b) => a === b || S.edges.some((e) => (e.from === a && e.to === b) || (e.from === b && e.to === a));
+
+function renderLegend() {
+  const kinds = new Set([...S.nodes.values()].map((n) => n.kind));
+  const leg = (k) => `<span class="leg-item">${kindDot({ kind: k })}${KIND[k].name}</span>`;
+  const line = (r) => `<span class="leg-item"><svg width="22" height="8" aria-hidden="true"><line x1="0" y1="4" x2="22" y2="4" class="edge${ROLE_DASH[r] ? ` ${ROLE_DASH[r]}` : ""}" style="stroke:${ROLE_COLOR[r]};stroke-width:1.8"/></svg>${ROLE_NAME[r]}</span>`;
+  $("legend").innerHTML = `<div class="leg-row">${Object.keys(KIND).filter((k) => kinds.has(k)).map(leg).join("")}</div><div class="leg-row">${ROLES.map(line).join("")}</div>`;
+}
+
+let frame = 0;
+const draw = () => { if (!frame) frame = requestAnimationFrame(() => { frame = 0; render(); }); };
+
+function render() {
+  if (!S.graph || !S.view) return;
+  const v = S.view;
+  const world = $("world");
+  world.setAttribute("transform", `translate(${v.tx} ${v.ty}) scale(${v.k})`);
+  $("zval").textContent = `${Math.round(v.k * 100)}%`;
+  const chain = S.selected && S.nodes.has(S.selected) ? supportChain(S.selected) : null;
+  const hover = S.hover;
+  const lit = (id) => (hover ? near(hover, id) : chain ? chain.nodes.has(id) : true);
+  const dimAll = !!hover || !!chain;
+  const fs = 10.5 / Math.max(v.k, LABEL_ZOOM_FLOOR);
+  const lfs = 9.5 / Math.max(v.k, 0.7);
+  const find = S.find.trim().toLowerCase();
+
+  // edges: neutral at rest, except a Rebuttal, which stays red; lit ones take their role's colour and label
+  const fan = pairFan(S.edges);
+  const geo = S.edges.map((e, i) => {
+    const p = S.pos[e.from], q = S.pos[e.to];
+    const on = (!!hover && (e.from === hover || e.to === hover)) || (chain?.edges.has(e.id) ?? false);
+    const f = fan[i];
+    const path = edgePath(p, q, R + 3, R + 9 / v.k + 2, S.layout.routes[e.id] ?? [], (f.index - (f.total - 1) / 2) * 30);
+    const resting = e.role === "rebuttal" ? ROLE_COLOR.rebuttal : NEUTRAL;
+    return { e, on, d: path.d, samples: path.samples, stroke: on ? ROLE_COLOR[e.role] : resting };
+  });
+  const lines = new Map([...S.nodes.keys()].map((id) => [id, wrapLabel(displayLabel(titleOf(id)))]));
+  const placed = placeNodeLabels([...S.nodes.keys()].map((id) => ({ id, at: S.pos[id], lines: lines.get(id) })), { fs, radius: R, edgePoints: geo.flatMap((g) => g.samples) });
+  const nodeBoxes = [...S.nodes.keys()].map((id) => { const p = S.pos[id]; return { l: p.x - R - 5, r: p.x + R + 5, t: p.y - R - 5, b: p.y + R + 5 }; });
+  const labelAt = placeEdgeLabels(geo.filter((g) => g.on).map((g) => ({ id: g.e.id, text: ROLE_NAME[g.e.role], samples: g.samples })), [...nodeBoxes, ...[...placed.values()].map((s) => s.box)], lfs);
+
+  // one arrow marker per colour, sized to the zoom
+  const colors = [...new Set([NEUTRAL, ...Object.values(ROLE_COLOR)])];
+  const mk = (c) => `arrow-${colors.indexOf(c)}`;
+  $("defs").innerHTML = colors.map((c) => `<marker id="${mk(c)}" markerWidth="${7 / v.k}" markerHeight="${7 / v.k}" refX="${6 / v.k}" refY="${3.5 / v.k}" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L${7 / v.k},${3.5 / v.k} L0,${7 / v.k} z" fill="${c}"/></marker>`).join("");
+
+  let h = "<g>";
+  // lit edges last, so they are drawn over the resting ones
+  for (const g of [...geo.filter((g) => !g.on), ...geo.filter((g) => g.on)]) {
+    const { e } = g;
+    const label = labelAt.get(e.id);
+    h += `<g class="edge-g${dimAll && !g.on ? " dim" : ""}"><path d="${g.d}" class="edge${ROLE_DASH[e.role] ? ` ${ROLE_DASH[e.role]}` : ""}${g.on ? " on" : ""}" style="stroke:${g.stroke}" marker-end="url(#${mk(g.stroke)})"/>`;
+    if (label) h += `<text class="edge-label" x="${label.x}" y="${label.y + lfs * 0.35}" text-anchor="middle" style="font-size:${lfs}px;stroke-width:${4 / v.k}px${e.role === "rebuttal" ? `;fill:${ROLE_COLOR.rebuttal}` : ""}">${ROLE_NAME[e.role]}</text>`;
+    h += "</g>";
+  }
+  h += "</g>";
+  for (const [id, n] of S.nodes) {
+    const p = S.pos[id];
+    const k = KIND[n.kind] ?? KIND.intro;
+    const sel = id === S.selected;
+    const side = placed.get(id)?.side ?? "right";
+    const ls = lines.get(id);
+    const showLabel = !chain || chain.nodes.has(id) || id === hover;
+    const match = find && (id.includes(find) || titleOf(id).toLowerCase().includes(find));
+    h += `<g class="node${sel ? " sel" : ""}${lit(id) ? "" : " dim"}" data-id="${esc(id)}" transform="translate(${p.x} ${p.y})" tabindex="0" role="button" aria-label="${esc(`${titleOf(id)}, ${k.name}`)}">`;
+    h += `<circle r="${Math.max(R + 8, 18 / v.k)}" fill="transparent"/>`;
+    if (match) h += `<circle r="${R + 9}" class="match-ring"/>`;
+    if (sel) h += `<circle r="${R + 6}" class="sel-ring"/>`;
+    if (k.ringed) h += `<circle r="${R + 3.5}" fill="none" stroke="${k.color}" stroke-width="1.6"/>`;
+    if (k.square) h += `<rect x="${-R + 1}" y="${-R + 1}" width="${2 * R - 2}" height="${2 * R - 2}" rx="3" class="node-dot" style="fill:${k.color}"/>`;
+    else h += `<circle r="${k.ringed ? R - 1 : R}" class="node-dot" style="fill:${k.color};stroke:var(--cg-border)"/>`;
+    if (showLabel) {
+      const lh = fs * 1.22;
+      const y0 = side === "below" ? R + 5 + fs * 0.85 : side === "above" ? -(R + 5) - (ls.length - 1) * lh - fs * 0.2 : -((ls.length - 1) * lh) / 2 + fs * 0.35;
+      const x0 = side === "right" ? R + 9 : side === "left" ? -(R + 9) : 0;
+      h += `<text class="label" text-anchor="${side === "right" ? "start" : side === "left" ? "end" : "middle"}" style="font-size:${fs}px;stroke-width:${4 / v.k}px">${ls.map((l, i) => `<tspan x="${x0}" y="${y0 + i * lh}">${esc(l)}</tspan>`).join("")}</text>`;
+    }
+    h += "</g>";
+  }
+  world.innerHTML = h;
+}
+
+// ---------------------------------------------------------------- view: fit, pan, zoom, hover
+
+const ZOOM_MIN = 0.08, ZOOM_MAX = 4;
+function insets() {
+  const wrap = $("stage").getBoundingClientRect();
+  const note = $("note").getBoundingClientRect();
+  const leg = $("legend").getBoundingClientRect();
+  return { l: 24, r: 64, t: Math.max(78, note.height ? note.bottom - wrap.top + 14 : 0), b: Math.max(60, leg.height ? wrap.bottom - leg.top + 14 : 0) };
+}
+function fit() {
+  if (!S.graph) return;
+  const r = $("stage").getBoundingClientRect();
+  if (!r.width) return;
+  const ps = Object.values(S.pos);
+  const widest = Math.max(...[...S.nodes.keys()].map((id) => labelWidth(titleOf(id))), 0);
+  const minX = Math.min(...ps.map((p) => p.x)) - 34, maxX = Math.max(...ps.map((p) => p.x)) + 34 + widest;
+  const minY = Math.min(...ps.map((p) => p.y)) - 30, maxY = Math.max(...ps.map((p) => p.y)) + 30;
+  const inset = insets();
+  const w = Math.max(120, r.width - inset.l - inset.r), h = Math.max(120, r.height - inset.t - inset.b);
+  const k = Math.max(ZOOM_MIN, Math.min(1.4, Math.min(w / (maxX - minX || 1), h / (maxY - minY || 1))));
+  S.view = { tx: inset.l + w / 2 - ((minX + maxX) / 2) * k, ty: inset.t + h / 2 - ((minY + maxY) / 2) * k, k };
+  S.auto = true;
+  draw();
+}
+/** Keep the selected node and its label on screen, panning as little as possible. */
+function keepVisible(id) {
+  const p = S.pos[id], v = S.view;
+  if (!p || !v) return;
+  const r = $("stage").getBoundingClientRect();
+  const sx = p.x * v.k + v.tx, sy = p.y * v.k + v.ty;
+  const m = { l: 64, r: 220, t: 90, b: 110 };
+  const dx = sx < m.l ? m.l - sx : sx > r.width - m.r ? r.width - m.r - sx : 0;
+  const dy = sy < m.t ? m.t - sy : sy > r.height - m.b ? r.height - m.b - sy : 0;
+  if (dx || dy) { v.tx += dx; v.ty += dy; S.auto = false; }
+}
+function zoomAt(factor, cx, cy) {
+  const v = S.view;
+  if (!v) return;
+  const k = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, v.k * factor));
+  v.tx = cx - ((cx - v.tx) * k) / v.k;
+  v.ty = cy - ((cy - v.ty) * k) / v.k;
+  v.k = k;
+  S.auto = false;
+  draw();
+}
+const svg = $("svg");
+const centre = () => { const r = svg.getBoundingClientRect(); return [r.width / 2, r.height / 2]; };
+$("zin").addEventListener("click", () => zoomAt(1.25, ...centre()));
+$("zout").addEventListener("click", () => zoomAt(0.8, ...centre()));
+$("zfit").addEventListener("click", fit);
+svg.addEventListener("wheel", (ev) => {
+  ev.preventDefault();
+  const r = svg.getBoundingClientRect();
+  zoomAt(Math.exp(-ev.deltaY * (ev.ctrlKey ? 0.01 : 0.0015)), ev.clientX - r.left, ev.clientY - r.top);
+}, { passive: false });
+let drag = null;
+svg.addEventListener("pointerdown", (ev) => {
+  if (!S.view) return;
+  drag = { x: ev.clientX, y: ev.clientY, tx: S.view.tx, ty: S.view.ty, node: ev.target.closest(".node")?.dataset.id ?? null, moved: false };
+});
+window.addEventListener("pointermove", (ev) => {
+  if (drag) {
+    const dx = ev.clientX - drag.x, dy = ev.clientY - drag.y;
+    if (!drag.moved && Math.hypot(dx, dy) < 4) return;
+    drag.moved = true;
+    svg.classList.add("dragging");
+    S.view.tx = drag.tx + dx; S.view.ty = drag.ty + dy; S.auto = false;
+    hideTip();
+    draw();
+    return;
+  }
+  const node = ev.target.closest?.("#svg .node")?.dataset.id ?? null;
+  if (node !== S.hover) { S.hover = node; draw(); }
+  if (node) showTip(node, ev); else hideTip();
+});
+window.addEventListener("pointerup", () => {
+  if (drag && !drag.moved) select(drag.node);
+  drag = null;
+  svg.classList.remove("dragging");
+});
+svg.addEventListener("pointerleave", () => { if (S.hover) { S.hover = null; draw(); } hideTip(); });
+svg.addEventListener("keydown", (ev) => {
+  const id = ev.target.closest?.(".node")?.dataset.id;
+  if (id && (ev.key === "Enter" || ev.key === " ")) { ev.preventDefault(); select(id); }
+});
+window.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && S.selected) select(null); });
+new ResizeObserver(() => { if (S.graph) (S.auto ? fit() : draw()); }).observe($("stage"));
+
+function showTip(id, ev) {
+  const n = S.nodes.get(id);
+  const tip = $("tip");
+  const k = KIND[n.kind] ?? KIND.intro;
+  tip.innerHTML = n.isFigure
+    ? `<strong>${esc(n.shows)}</strong><div class="tip-body">${esc(n.file ?? "no file")}</div><div class="tip-kind">${esc(id)} · ${k.name}</div>`
+    : `<strong>${esc(n.title)}</strong><div class="tip-body">${md(n.claim)}</div><div class="tip-kind">${esc(id)} · ${k.name}${n.rank ? ` · ${esc(n.rank)}` : ""}</div>`;
+  tip.hidden = false;
+  const r = $("stage").getBoundingClientRect();
+  const x = ev.clientX - r.left, y = ev.clientY - r.top;
+  tip.style.left = `${Math.max(8, Math.min(x + 18, r.width - tip.offsetWidth - 8))}px`;
+  tip.style.top = `${Math.max(8, Math.min(y + 15, r.height - tip.offsetHeight - 8))}px`;
+}
+const hideTip = () => { $("tip").hidden = true; };
+
+// ---------------------------------------------------------------- selection and the reading panel
+
+function select(id) {
+  S.selected = id && S.nodes.has(id) ? id : null;
+  renderPanel();
+  renderOutline();
+  hideTip();
+  // the panel opening narrows the canvas: keep the selection in view once the layout has settled
+  requestAnimationFrame(() => { if (S.selected) keepVisible(S.selected); draw(); });
+}
+
+const src = (s) => {
+  if (S.nodes.has(s)) return `<button class="src link" data-go="${esc(s)}">${kindDot(S.nodes.get(s))}${esc(s)}</button>`;
+  return `<span class="src">${/\//.test(s) && !/round-\d+:C\d+$/.test(s) ? icon("file-text") : ""}${esc(s)}</span>`;
+};
+const linkRow = (otherId, chip, ic) => `<div class="link-row"><button class="link-title" data-go="${esc(otherId)}">${icon(ic)}<span>${esc(titleOf(otherId))}</span></button>${chip}</div>`;
+
+function renderPanel() {
+  const panel = $("panel");
+  const n = S.selected ? S.nodes.get(S.selected) : null;
+  if (!n) { panel.hidden = true; return; }
+  panel.hidden = false;
+  const k = KIND[n.kind] ?? KIND.intro;
+  const incoming = S.edges.filter((e) => e.to === n.id);
+  const outgoing = S.edges.filter((e) => e.from === n.id);
+  const section = (name, body, extra = "") => (body ? `<section class="sec"><div class="sec-head"><h4>${name}</h4>${extra}</div>${body}</section>` : "");
+  // the arguments that feed an element are listed inside the element they serve
+  const links = (role) => {
+    const es = incoming.filter((e) => e.role === role);
+    return es.length ? `<div class="links">${es.map((e) => linkRow(e.from, "", "corner-down-right")).join("")}</div>` : "";
+  };
+  let h = `<div class="panel-scroll"><div class="panel-head">
+    <span class="badge" style="color:${k.color};background:color-mix(in oklch, ${k.color} 16%, transparent)">${k.name}${n.rank ? ` · ${esc(n.rank)}` : ""}</span>
+    <span class="idtag">${esc(n.id)}</span>
+    <button class="btn icon ghost" id="closePanel" title="Close (Esc)" aria-label="Close">${icon("x")}</button>
+  </div>`;
+  if (n.isFigure) {
+    h += `<h2 class="title">${esc(n.shows)}</h2>`;
+    h += section("File", n.file ? `<div class="src-list">${src(n.file)}</div>` : `<div class="hint">none</div>`);
+  } else {
+    h += `<h2 class="title">${esc(n.title)}</h2>`;
+    if (n.kind === "end") {
+      h += section("Sentence", `<div class="sentence">${md(n.sentence)}</div>`);
+      h += section("Reader", md(n.reader));
+    }
+    h += section("Claim", md(n.claim));
+    h += section("Grounds", (n.grounds ?? []).map((g) => `<div class="ground">${md(g.text)}${g.source ? `<div class="src-line">source ${src(g.source)}</div>` : ""}</div>`).join("") + links("grounds"));
+    h += section("Warrant", md(n.warrant) + links("warrant"), n.warrant_implicit ? `<span class="tag" title="Textbook or unstated in the text">implicit</span>` : "");
+    for (const [name, key] of [["Backing", "backing"], ["Qualifier", "qualifier"], ["Rebuttal", "rebuttal"]]) {
+      const body = (String(n[key] ?? "").trim() ? md(n[key]) : "") + (key === "qualifier" ? "" : links(key));
+      h += section(name, body);
+    }
+  }
+  h += section("Used by", outgoing.length ? `<div class="links">${outgoing.map((e) => linkRow(e.to, `<span class="chip ${e.role}">as ${ROLE_NAME[e.role]}</span>`, "corner-up-right")).join("")}</div>` : `<div class="hint">${n.kind === "end" ? "Nothing: an End is used by no argument." : "No argument uses it."}</div>`);
+  if (!n.isFigure) {
+    h += section("Sources", n.sources?.length ? `<div class="src-list">${n.sources.map(src).join("")}</div>` : "");
+    h += section("Cites", n.cites?.length ? `<div class="src-list">${n.cites.map((b) => `<a class="src link" href="https://ui.adsabs.harvard.edu/abs/${encodeURIComponent(b)}" target="_blank" rel="noopener" title="Open in ADS">${esc(b)}${icon("external-link")}</a>`).join("")}</div>` : "");
+  }
+  if (S.outline) {
+    const uses = S.outline.filter((e) => e.cards.some((c) => c.id === n.id));
+    h += section(`In the outline · ${uses.length}`, uses.length
+      ? uses.map((e) => {
+        const parts = e.cards.find((c) => c.id === n.id).parts;
+        return `<div class="entry"><div class="entry-id">${esc(e.id)}</div><div class="entry-meta">${esc(e.section?.title ?? "")}${e.section?.group ? ` · ${esc(e.section.group)}` : ""} · ${parts.length ? esc(parts.join(", ")) : "all parts"}${e.fields.role ? ` · ${esc(e.fields.role)}` : ""}</div>${e.fields["reader-takeaway"] ? `<div class="entry-take">${esc(e.fields["reader-takeaway"])}</div>` : ""}</div>`;
+      }).join("")
+      : `<div class="hint${n.kind === "native" ? "" : " warn"}">${n.kind === "native" ? "No entry lists it; a Native need not be written." : `No entry of ${esc(S.outlineName)} lists it.`}</div>`);
+  }
+  panel.innerHTML = h + "</div>";
+  panel.querySelector(".panel-scroll").scrollTop = 0;
+}
+$("panel").addEventListener("click", (ev) => {
+  if (ev.target.closest("#closePanel")) return select(null);
+  const go = ev.target.closest("[data-go]");
+  if (go) select(go.dataset.go);
+});
+
+// ---------------------------------------------------------------- find, theme, files
+
+$("find").addEventListener("input", (ev) => { S.find = ev.target.value; draw(); });
+$("find").addEventListener("keydown", (ev) => {
+  if (ev.key !== "Enter" || !S.graph) return;
+  const q = ev.target.value.trim().toLowerCase();
+  if (!q) return;
+  const hit = [...S.nodes.values()].find((n) => n.id === q) ?? [...S.nodes.values()].find((n) => JSON.stringify(n).toLowerCase().includes(q));
+  if (hit) select(hit.id);
+});
+const setTheme = (t) => {
+  document.documentElement.dataset.theme = t;
+  $("theme").innerHTML = icon(t === "dark" ? "sun" : "moon");
+  try { localStorage.setItem("argument-viewer-theme", t); } catch {}
+  draw();
+};
+let savedTheme = null;
+try { savedTheme = localStorage.getItem("argument-viewer-theme"); } catch {}
+setTheme(savedTheme ?? (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"));
+$("theme").addEventListener("click", () => setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark"));
+
+for (const id of ["pickGraph", "pickGraph2", "pickOutline"]) $(id).addEventListener("change", (ev) => { openFiles([...ev.target.files]); ev.target.value = ""; });
+const stage = $("stage");
+window.addEventListener("dragover", (ev) => { ev.preventDefault(); stage.classList.add("drop"); });
+window.addEventListener("dragleave", (ev) => { if (!ev.relatedTarget) stage.classList.remove("drop"); });
+window.addEventListener("drop", (ev) => { ev.preventDefault(); stage.classList.remove("drop"); openFiles([...ev.dataTransfer.files]); });
+</script>
+</body>
+</html>

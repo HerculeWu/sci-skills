@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Argument DAG of a paper, version 1",
+  "description": "papers/<paper>/argument.json. Copied verbatim by other projects: keep this file the single source, and bump version on any incompatible change. Rules no JSON Schema can state (unique ids, edges naming nodes that exist, no cycle, every node on a path to an end, no repeated edge) are listed in README.md next to this file.",
+  "type": "object",
+  "required": ["version", "paper", "arguments", "figures", "edges"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": 1 },
+    "paper": {
+      "type": "object",
+      "required": ["id", "title"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/text", "description": "the <paper> name" },
+        "title": { "$ref": "#/$defs/text" }
+      }
+    },
+    "arguments": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/argument" },
+      "contains": { "type": "object", "required": ["rank"], "properties": { "rank": { "const": "main" } } },
+      "minContains": 1,
+      "maxContains": 1,
+      "description": "exactly one end argument is ranked main"
+    },
+    "figures": { "type": "array", "items": { "$ref": "#/$defs/figure" } },
+    "edges": { "type": "array", "items": { "$ref": "#/$defs/edge" } }
+  },
+  "$defs": {
+    "text": { "type": "string", "minLength": 1, "pattern": "\\S" },
+    "argument": {
+      "type": "object",
+      "required": ["id", "kind", "title", "claim", "grounds", "warrant", "warrant_implicit", "backing", "qualifier", "rebuttal", "sources", "cites"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^(n|i|m|r|d|e)-[a-z0-9-]+$" },
+        "kind": { "enum": ["native", "intro", "method", "result", "discussion", "end"] },
+        "title": { "$ref": "#/$defs/text", "maxLength": 80, "description": "the Claim in a few words, with its key number, at most 80 characters" },
+        "claim": { "$ref": "#/$defs/text" },
+        "grounds": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/ground" } },
+        "warrant": { "$ref": "#/$defs/text" },
+        "warrant_implicit": { "type": "boolean" },
+        "backing": { "type": "string" },
+        "qualifier": { "type": "string" },
+        "rebuttal": { "type": "string" },
+        "sources": { "type": "array", "items": { "$ref": "#/$defs/text" } },
+        "cites": { "type": "array", "items": { "$ref": "#/$defs/bibcode" } },
+        "rank": { "enum": ["main", "secondary", "side"] },
+        "sentence": { "$ref": "#/$defs/text" },
+        "reader": { "$ref": "#/$defs/text" }
+      },
+      "allOf": [
+        { "if": { "required": ["kind"], "properties": { "kind": { "const": "native" } } }, "then": { "properties": { "id": { "pattern": "^n-" } } }, "description": "the id prefix matches kind" },
+        { "if": { "required": ["kind"], "properties": { "kind": { "const": "intro" } } }, "then": { "properties": { "id": { "pattern": "^i-" } } }, "description": "the id prefix matches kind" },
+        { "if": { "required": ["kind"], "properties": { "kind": { "const": "method" } } }, "then": { "properties": { "id": { "pattern": "^m-" } } }, "description": "the id prefix matches kind" },
+        { "if": { "required": ["kind"], "properties": { "kind": { "const": "result" } } }, "then": { "properties": { "id": { "pattern": "^r-" } } }, "description": "the id prefix matches kind" },
+        { "if": { "required": ["kind"], "properties": { "kind": { "const": "discussion" } } }, "then": { "properties": { "id": { "pattern": "^d-" } } }, "description": "the id prefix matches kind" },
+        {
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "end" } } },
+          "then": { "required": ["rank", "sentence", "reader"], "properties": { "id": { "pattern": "^e-" } } },
+          "else": { "properties": { "rank": false, "sentence": false, "reader": false } },
+          "description": "rank, sentence and reader are on end arguments only, and required there"
+        }
+      ]
+    },
+    "ground": {
+      "type": "object",
+      "required": ["text"],
+      "additionalProperties": false,
+      "properties": {
+        "text": { "$ref": "#/$defs/text" },
+        "source": { "$ref": "#/$defs/text" }
+      },
+      "if": { "required": ["text"], "properties": { "text": { "pattern": "[0-9]" } } },
+      "then": { "required": ["source"] },
+      "description": "a Grounds item whose text states a number names its source"
+    },
+    "bibcode": { "type": "string", "pattern": "^[0-9]{4}[A-Za-z0-9&.+]{14}[A-Za-z.]$", "description": "an ADS bibcode, 19 characters" },
+    "figure": {
+      "type": "object",
+      "required": ["id", "kind", "file", "shows"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^(f|t)-[a-z0-9-]+$" },
+        "kind": { "enum": ["figure", "table"] },
+        "file": { "type": ["string", "null"] },
+        "shows": { "$ref": "#/$defs/text" }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "required": ["from", "to", "role"],
+      "additionalProperties": false,
+      "properties": {
+        "from": { "type": "string", "pattern": "^(n|i|m|r|d|f|t)-[a-z0-9-]+$", "description": "an argument or a figure, never an end" },
+        "to": { "type": "string", "pattern": "^(n|i|m|r|d|e)-[a-z0-9-]+$", "description": "an argument" },
+        "role": { "enum": ["grounds", "warrant", "backing", "rebuttal"] }
+      }
+    }
+  }
+}

@@ -7,24 +7,41 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { bibEntries, cardList, checkText, cites, kinds, lintOutline, paperFields, parseOutline, prose, run, sourceNumbers, units, wordCount } from "./paper.mjs";
 
-function card(id, text, color) {
-  return { id, type: "text", text, x: 0, y: 0, width: 400, height: 200, ...(color ? { color } : {}) };
+/** An argument with every field the schema requires. */
+function arg(id, kind, fields = {}) {
+  return { id, kind, title: id, claim: "c", grounds: [{ text: "g" }], warrant: "w", warrant_implicit: false, backing: "", qualifier: "", rebuttal: "", sources: [], cites: [], ...fields };
 }
-const edge = (id, fromNode, toNode, label) => ({ id, fromNode, fromSide: "top", toNode, toSide: "bottom", label });
 
 /** A small paper DAG: a Method, a Result and the main End. */
-function canvas() {
+function graph() {
   return {
-    nodes: [
-      card("paper", "# A paper"),
-      card("m-ensemble", "# Paired ensembles\n**Argument (Method)**\n\n## Claim\nForty seed pairs per treatment.\n\n## Grounds\n- 40 seeds (`sims/specs.md`).\n\n## Warrant\nSeed pairing removes the noise the treatments share."),
-      card("r-width", "# Tails closer to the orbit\n**Argument (Result)**\n\n## Claim\nThe width falls from 29.0 to 21.5 pc.\n\n## Grounds\n- `tails/round-1:C2` held: 29.0 vs 21.5 pc, a fall of 0.26 (`data/width.csv`).\n\n## Warrant\nThe yardstick of m-ensemble.\n\nCites: Kupper A., 2010, MNRAS, 401, 105 (doi:10.1111/j.1365-2966.2009.15690.x)"),
-      card(
-        "e-dynamics",
-        "# The treatment moves the tail\n**End Argument**\n\n## Claim\nThe tail lies 26 % closer to the orbit.\n\n## Grounds\n- r-width.\n\n## Warrant\nThe yardstick.\n\n## Qualifier\nTwo masses on one eccentric orbit.\n\n## Rank\nmain\n\n## Sentence\nThe treatment changes where a tail lies.\n\n## Reader\nDynamicists.",
-      ),
+    version: 1,
+    paper: { id: "tails", title: "A paper" },
+    arguments: [
+      arg("m-ensemble", "method", { title: "Paired ensembles", claim: "Forty seed pairs per treatment.", grounds: [{ text: "40 seeds", source: "sims/specs.md" }], warrant: "Seed pairing removes the noise the treatments share." }),
+      arg("r-width", "result", {
+        title: "Tails closer to the orbit",
+        claim: "The width falls from 29.0 to 21.5 pc.",
+        grounds: [{ text: "held: 29.0 vs 21.5 pc, a fall of 0.26 (`data/width.csv`).", source: "tails/round-1:C2" }],
+        warrant: "The yardstick of m-ensemble.",
+        cites: ["2010MNRAS.401..105K"],
+      }),
+      arg("e-dynamics", "end", {
+        title: "The treatment moves the tail",
+        claim: "The tail lies 26 % closer to the orbit.",
+        grounds: [{ text: "the width", source: "r-width" }],
+        warrant: "The yardstick.",
+        qualifier: "Two masses on one eccentric orbit.",
+        rank: "main",
+        sentence: "The treatment changes where a tail lies.",
+        reader: "Dynamicists.",
+      }),
     ],
-    edges: [edge("1", "m-ensemble", "r-width", "Warrant"), edge("2", "r-width", "e-dynamics", "Grounds")],
+    figures: [],
+    edges: [
+      { from: "m-ensemble", to: "r-width", role: "warrant" },
+      { from: "r-width", to: "e-dynamics", role: "grounds" },
+    ],
   };
 }
 
@@ -95,7 +112,7 @@ const TEXT = {
   "05-conclusions.tex": "\\section{Conclusions}\n% outline: conclusions.main\n% source: written\nThe treatment changes where a tail lies, in two masses on one eccentric orbit.\n",
 };
 
-const BIB = "@ARTICLE{Kupper2010,\n  doi = {10.1111/j.1365-2966.2009.15690.x},\n}\n";
+const BIB = "@ARTICLE{Kupper2010,\n  doi = {10.1111/j.1365-2966.2009.15690.x},\n  adsurl = {https://ui.adsabs.harvard.edu/abs/2010MNRAS.401..105K},\n}\n";
 
 /** The inputs of checkText for the fixture text, with `edit` applied to the section files first. */
 function textInputs(edit = (t) => t) {
@@ -103,9 +120,9 @@ function textInputs(edit = (t) => t) {
   return {
     units: units(files),
     outline: parseOutline(OUTLINE),
-    canvas: canvas(),
+    graph: graph(),
     fields: { "abstract limit": "300" },
-    sources: [{ text: canvas().nodes.map((n) => n.text).join("\n") }, { text: "fall,width\n0.2604,29.04\n", csv: true }],
+    sources: [{ text: JSON.stringify(graph()) }, { text: "fall,width\n0.2604,29.04\n", csv: true }],
     bib: bibEntries(BIB),
     cited: ["Kupper2010"],
   };
@@ -153,7 +170,7 @@ test("sourceNumbers rounds CSV cells as a text would write them", () => {
 
 // ---------------------------------------------------------------- lint-outline
 
-const lint = (text, opts = {}) => lintOutline(parseOutline(text), { canvas: canvas(), fields: { "abstract limit": "300" }, kindsByGroup: kinds(GUIDE), ...opts });
+const lint = (text, opts = {}) => lintOutline(parseOutline(text), { graph: graph(), fields: { "abstract limit": "300" }, kindsByGroup: kinds(GUIDE), ...opts });
 
 test("a well-formed outline passes", () => {
   assert.deepEqual(lint(OUTLINE), []);
@@ -179,7 +196,7 @@ test("kinds must belong to the section's group; groups to the Kinds block", () =
 
 test("cards and parts exist; figures and context sources exist", () => {
   const problems = lint(OUTLINE.replace("r-width (Claim, Grounds)", "r-width (Claim, Backing), r-gone"), { exists: (p) => p !== "data/why.md" && p !== "figures/width.png" });
-  for (const want of ['has no ## Backing', 'card "r-gone" is not on the canvas', 'figure "figures/width.png"', 'context source "data/why.md"']) {
+  for (const want of ['card "r-width" has no Backing', 'card "r-gone" is not an argument of argument.json', 'figure "figures/width.png"', 'context source "data/why.md"']) {
     assert.ok(problems.some((p) => p.includes(want)), want);
   }
 });
@@ -188,6 +205,11 @@ test("coverage: every non-Native card listed, every End in the abstract and conc
   const problems = lint(OUTLINE.replace("cards: e-dynamics (Sentence, Qualifier)", "cards: e-dynamics (Qualifier)").replace("cards: m-ensemble (Claim, Grounds)", "cards: none"));
   assert.ok(problems.some((p) => p.includes('card "m-ensemble" is listed by no entry')));
   assert.ok(problems.some((p) => p.includes("Sentence is listed by no Conclusions entry")));
+});
+
+test("a card part is any part of the argument, by its outline name; Rank and Sentence only on an End", () => {
+  const problems = lint(OUTLINE.replace("r-width (Claim, Grounds)", "r-width (Title, Claim, Warrant, Rank)").replace("e-dynamics (Claim, Qualifier, Sentence)", "e-dynamics (Claim, Qualifier, Sentence, Rank, Reader)"));
+  assert.deepEqual(problems, ['entry "results.width" (line 30): card "r-width" has no Rank']);
 });
 
 test("one headline per section, and the abstract's budgets within the journal's limit", () => {
@@ -224,7 +246,7 @@ test("a number with no source is reported; in the conclusions it must stand on a
 
 test("a percentage may restate a fraction its source gives", () => {
   const problems = checkText(textInputs((t) => ({ ...t, "03-results.tex": t["03-results.tex"].replace("26\\,\\%", "27\\,\\%") })));
-  assert.deepEqual(problems, ["03-results.tex: paragraph \"results.width\" states 27, found on no card and in no file the canvas or the outline names"]);
+  assert.deepEqual(problems, ["03-results.tex: paragraph \"results.width\" states 27, found on no card and in no file argument.json or the outline names"]);
 });
 
 test("budgets, the abstract limit, the Qualifier's trace and the main Sentence", () => {
@@ -247,7 +269,7 @@ test("citations are in refs.bib and stand on a card", () => {
   const problems = checkText({ ...inputs, cited: ["Kupper2010", "Gone2020", "Other2019"], bib: bibEntries(`${BIB}\n@ARTICLE{Other2019,\n  doi = {10.1/xyz},\n}\n`) });
   assert.ok(problems.some((p) => p.includes('"Gone2020" is not in refs.bib')));
   assert.ok(problems.some((p) => p.includes('"Other2019" stands on no card')));
-  assert.ok(!problems.some((p) => p.includes('"Kupper2010"'))); // its DOI is on r-width's Cites line
+  assert.ok(!problems.some((p) => p.includes('"Kupper2010"'))); // its bibcode is in r-width's cites
 });
 
 test("a source line names a labelled library paper; a context-? entry is left not written", () => {
@@ -259,16 +281,20 @@ test("a source line names a labelled library paper; a context-? entry is left no
 
 // ---------------------------------------------------------------- cites and the CLI
 
-test("cites pairs library papers, found by key or DOI, with their bibcodes and lists Cites lines outside the library", () => {
-  const c = canvas();
-  c.nodes[1].text += "\n\nCites: Someone B., 2001, ApJ, 1, 1";
-  const meta = new Map([["Kupper2010", { bibcode: "2010MNRAS.401..105K", doi: "10.1111/j.1365-2966.2009.15690.x" }]]);
-  const { pairs, outside } = cites(c, meta);
-  assert.deepEqual(pairs, ["Kupper2010=2010MNRAS.401..105K"]);
-  assert.deepEqual(outside, ["Someone B., 2001, ApJ, 1, 1"]);
+test("cites pairs library papers, found by a library card or by bibcode, with their bibcodes and lists the bibcodes outside the library", () => {
+  const g = graph();
+  g.arguments[0].cites.push("2001ApJ...001....1S");
+  g.arguments[0].grounds.push({ text: "a yardstick", source: "Weis2025:rg-shift" });
+  const meta = new Map([
+    ["Kupper2010", { bibcode: "2010MNRAS.401..105K", doi: "10.1111/j.1365-2966.2009.15690.x" }],
+    ["Weis2025", { bibcode: "2025A&A...703A..47W" }],
+  ]);
+  const { pairs, outside } = cites(g, meta);
+  assert.deepEqual(pairs, ["Kupper2010=2010MNRAS.401..105K", "Weis2025=2025A&A...703A..47W"]);
+  assert.deepEqual(outside, ["2001ApJ...001....1S"]);
 });
 
-/** A project on disk: canvas, paper.md, calibration, outline, text, refs.bib, data. */
+/** A project on disk: argument.json, paper.md, calibration, outline, text, refs.bib, data. */
 function project() {
   const root = mkdtempSync(join(tmpdir(), "write-paper-"));
   const paper = join(root, "papers", "tails");
@@ -279,7 +305,7 @@ function project() {
   mkdirSync(join(root, "figures"));
   mkdirSync(join(root, "data"));
   mkdirSync(join(root, "sims"));
-  writeFileSync(join(paper, "argument.canvas"), JSON.stringify(canvas()));
+  writeFileSync(join(paper, "argument.json"), JSON.stringify(graph()));
   writeFileSync(join(paper, "paper.md"), "# Paper\n\n**Group**: simulation\n**Library**: lib\n**Abstract limit**: 300\n");
   writeFileSync(join(root, "lib", "writing", "section-guide.md"), GUIDE);
   writeFileSync(join(root, "lib", "writing", "labels", "Kupper2010.json"), "{}");
@@ -308,6 +334,12 @@ test("the commands run on a project", () => {
   const bad = runWith(["check", v1, "--root", root]);
   assert.equal(bad.code, 1);
   assert.match(bad.stderr, /states 31\.0/);
+  const g = graph();
+  delete g.arguments[1].warrant;
+  writeFileSync(join(paper, "argument.json"), JSON.stringify(g));
+  const invalid = runWith(["lint-outline", join(v1, "outline.md"), "--root", root]);
+  assert.equal(invalid.code, 1);
+  assert.match(invalid.stderr, /argument\.json: argument "r-width" has no warrant/);
 });
 
 test("usage errors exit 2", () => {

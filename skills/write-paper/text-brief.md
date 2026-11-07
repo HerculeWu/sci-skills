@@ -6,12 +6,12 @@ You write the paper's paragraphs from its outline, one paragraph per entry, in t
 ## Inputs
 - `sources.md`, then this brief.
 - `vN/outline.md` and `vN/glossary.md`.
-- For each entry, the card parts its `cards` field lists in `papers/<paper>/argument.canvas`, and no other part of the canvas.
+- For each entry, the card parts its `cards` field lists in `papers/<paper>/argument.json`, and no other part of it.
 - `papers/<paper>/paper.md`: Build, Journal, Names.
 - `<library dir>/writing/`: `library-map.md` first, then the labels and the `paragraphs` tool to open a paragraph, `language.json` and the `profile` tool for the rounds (`writing/README.md` says how to run them).
 - The library's full texts and Shorts, reached through the map.
 - The figures the outline names; `papers/<paper>/journal/` for the class files.
-- Not read: earlier versions, the outline brief, the rest of the canvas.
+- Not read: earlier versions, the outline brief, the rest of argument.json.
 
 ## Output
 `vN/main.tex`, `vN/sections/*.tex` (one file per section, in reading order by name, the abstract included), `vN/refs.bib`, the built PDF, `vN/REPORT.md`. `scripts/paper.mjs check vN --root <project>` must pass.
@@ -48,7 +48,7 @@ An entry whose `context` is `?` gets its `% outline:` line and `% not written: c
 A card's wording is a working record, never the reader's sentence: render its content in the field's words and the glossary's names. Every object, quantity and label takes the glossary's name; a word in several senses is never written bare; an `_Avoid_` word is never written. Add a glossary block only to name something the outline did not; change none.
 
 ## The bibliography
-`scripts/paper.mjs cites papers/<paper>` lists `key=bibcode` for the library papers the canvas cites, and the `Cites:` lines outside the library. Find each outside work's bibcode with `${CLAUDE_PLUGIN_ROOT}/skills/find-papers/scripts/ads.mjs search`, then write `refs.bib` from `ads.mjs bibtex <key>=<bibcode> …`, keyed by library key where there is one. Cite only its keys; never write an entry from memory.
+`scripts/paper.mjs cites papers/<paper>` lists `key=bibcode` for the library papers argument.json cites, and the bibcodes of the works outside the library. Give each outside work a key in the library's style (first author and year), then write `refs.bib` from `${CLAUDE_PLUGIN_ROOT}/skills/find-papers/scripts/ads.mjs bibtex <key>=<bibcode> …`, keyed by library key where there is one. Cite only its keys; never write an entry from memory.
 
 ## Rounds
 Build, then read the whole text once as the reader, in order, and run `check` and the `profile` tool against `language.json` for the paper's group. Take every item -- a failed check, a range outside, a paragraph outside its budget, a `follows` relation the text does not state, a pronoun without its antecedent, a term used before its definition -- to its paragraph, and ask there which source authorised it and what the source wants instead. A copied paragraph outside a range was copied from the wrong paragraph: find a better one, or imitate. Fix it there, or name the sentence with its source. Four rounds at most; they end when `check` passes and every range item is at its edge or named sentence by sentence.

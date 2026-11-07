@@ -5,7 +5,7 @@ You write the outline of a research paper from its argument graph: one entry per
 
 ## Inputs
 - `sources.md`, then this brief.
-- `papers/<paper>/argument.canvas`, assumed correct. A card that looks wrong goes under "Card faults" in your report and is used as it stands.
+- `papers/<paper>/argument.json`, the paper's Argument DAG, assumed correct. A card that looks wrong goes under "Card faults" in your report and is used as it stands.
 - `papers/<paper>/paper.md`: the author's decisions.
 - `<library dir>/writing/section-guide.md` (the kinds, and what each section of the paper's group contains, in counts) and `language.json` (only for `tone` and `voice`).
 - The project's notes and proposals, only to fill `context`, never for a number or a claim.

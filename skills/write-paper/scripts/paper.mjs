@@ -7,7 +7,8 @@
  *   node paper.mjs check <vN or final dir> [--root <dir>]
  *   node paper.mjs cites <papers/<paper>> [--root <dir>]
  *
- * These read only the plugin's own formats: the paper's Argument DAG, paper.md,
+ * These read only the plugin's own formats: the paper's Argument DAG
+ * (argument.json, through paper-argument.mjs), paper.md,
  * the outline, the calibration's Kinds block and labels, and the text's
  * `% outline:` / `% source:` lines. How the field writes is measured by the
  * calibration's own tools, never here. Nothing here decides what is written;
@@ -17,8 +18,8 @@
 import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { checkCanvas, InvalidInput, readJson, UsageError } from "../../build-argument-library/scripts/library.mjs";
-import { fileRefs, libraryRefs, section, title } from "../../build-paper-argument/scripts/paper-argument.mjs";
+import { InvalidInput, UsageError } from "../../build-argument-library/scripts/library.mjs";
+import { argumentText, filesOf, part, readArgument, references, schemaProblems } from "../../build-paper-argument/scripts/paper-argument.mjs";
 
 export const REQUIRED = ["cards", "kind", "role", "tone", "voice", "budget", "follows", "reader-question", "reader-takeaway"];
 export const OPTIONAL = ["figure", "table", "context"];
@@ -31,7 +32,6 @@ const isConclusions = (sec) => CONCLUSIONS.test(sec?.group ?? "") || CONCLUSIONS
 const ENTRY_ID = /^[a-z0-9-]+\.[a-z0-9.-]+$/;
 const BUDGET = /^(\d+)\s*[–-]\s*(\d+)$/;
 const NONE = new Set(["—", "-", "none", ""]);
-const UNTYPED = new Set(["paper", "legend"]);
 // numbers a text writes without a source: small counts, section and figure numbers, years
 const FREE_NUMBER = (n) => /^\d+$/.test(n) && (Number(n) <= 10 || (Number(n) >= 1900 && Number(n) <= 2100));
 const COPY_SHORT = 7; // words of a Warrant, Backing, Qualifier, Rebuttal or title that make a copy
@@ -39,11 +39,11 @@ const COPY_LONG = 10; // of a Claim or Grounds, which share more words with any 
 const STOP = new Set("about above after again against because before being below between both could does doing during each further having other their there these those through under until where which while would should within without".split(" "));
 
 export const USAGE = `usage:
-  paper.mjs lint-outline <vN/outline.md> [--root <dir>]    the outline against the canvas, paper.md and the Kinds block
-  paper.mjs check <vN or final dir> [--root <dir>]          the text against the outline, the canvas and the journal
-  paper.mjs cites <papers/<paper>> [--root <dir>]           key=bibcode for every library paper the canvas cites, and the Cites lines outside it
+  paper.mjs lint-outline <vN/outline.md> [--root <dir>]    the outline against argument.json, paper.md and the Kinds block
+  paper.mjs check <vN or final dir> [--root <dir>]          the text against the outline, argument.json and the journal
+  paper.mjs cites <papers/<paper>> [--root <dir>]           key=bibcode for every library paper argument.json cites, and the bibcodes outside it
 
---root is the project (default: .); paths in cards and paper.md are read from it.
+--root is the project (default: .); paths in argument.json and paper.md are read from it.
 errors go to stderr with a non-zero exit, all of them at once.`;
 
 const q = (v) => JSON.stringify(v);
@@ -122,12 +122,14 @@ export function cardList(value) {
 const contextFiles = (value) => [...(value ?? "").matchAll(/\(([^()\s]+\.[A-Za-z0-9]+)\)/g)].map((m) => m[1]);
 const figureFile = (value) => (value ?? "").split(/\s+[—-]\s+/)[0].trim();
 
+/** The paper's argument.json, refused when it does not match the schema, and paper.md's fields. */
 function loadPaper(paperDir) {
-  const canvas = readJson(join(paperDir, "argument.canvas"));
-  const problems = checkCanvas(canvas);
-  if (problems.length > 0) throw new InvalidInput(problems.map((p) => `${join(paperDir, "argument.canvas")}: ${p}`));
+  const path = join(paperDir, "argument.json");
+  const graph = readArgument(path);
+  const problems = schemaProblems(graph);
+  if (problems.length > 0) throw new InvalidInput(problems.map((p) => `${path}: ${p}`));
   const fields = paperFields(readText(join(paperDir, "paper.md")));
-  return { canvas, fields };
+  return { graph, fields };
 }
 
 function writingDir(fields, root, paperDir) {
@@ -135,16 +137,15 @@ function writingDir(fields, root, paperDir) {
   return join(resolve(root, fields.library), "writing");
 }
 
-const textCards = (canvas) => canvas.nodes.filter((n) => n.type === "text" && !UNTYPED.has(n.id));
-const mainEnd = (canvas) => textCards(canvas).find((c) => c.id.startsWith("e-") && (section(c.text, "Rank") ?? "").startsWith("main"));
+const mainEnd = (graph) => graph.arguments.find((a) => a.kind === "end" && a.rank === "main");
 
 // ---------------------------------------------------------------- lint-outline
 
-/** Problems of an outline against its paper's canvas, paper.md fields, Kinds block, and the project's files. */
-export function lintOutline(outline, { canvas, fields = {}, kindsByGroup = new Map(), exists = () => true }) {
+/** Problems of an outline against its paper's argument.json, paper.md fields, Kinds block, and the project's files. */
+export function lintOutline(outline, { graph, fields = {}, kindsByGroup = new Map(), exists = () => true }) {
   const problems = [];
   const { sections, entries } = outline;
-  const cards = new Map(textCards(canvas).map((c) => [c.id, c]));
+  const cards = new Map(graph.arguments.map((a) => [a.id, a]));
   const seen = new Set();
   const figures = new Map();
 
@@ -186,12 +187,11 @@ export function lintOutline(outline, { canvas, fields = {}, kindsByGroup = new M
     for (const ref of cardList(e.fields.cards)) {
       const card = cards.get(ref.id);
       if (!card) {
-        problems.push(`${where}: card ${q(ref.id)} is not on the canvas`);
+        problems.push(`${where}: card ${q(ref.id)} is not an argument of argument.json`);
         continue;
       }
-      for (const part of ref.parts) {
-        if (part.toLowerCase() === "title") continue;
-        if (section(card.text, part) === null) problems.push(`${where}: card ${q(ref.id)} has no ## ${part}`);
+      for (const name of ref.parts) {
+        if (part(card, name) === null) problems.push(`${where}: card ${q(ref.id)} has no ${name}`);
       }
     }
     for (const f of ["figure", "table"]) {
@@ -227,7 +227,7 @@ export function lintOutline(outline, { canvas, fields = {}, kindsByGroup = new M
     if (!inGroup(id, isAbstract)) problems.push(`End ${q(id)} is listed by no Abstract entry`);
     if (!inGroup(id, isConclusions)) problems.push(`End ${q(id)} is listed by no Conclusions entry`);
   }
-  const main = mainEnd(canvas);
+  const main = mainEnd(graph);
   if (main) {
     if (!inGroup(main.id, isAbstract, "Sentence")) problems.push(`the main End ${q(main.id)}'s Sentence is listed by no Abstract entry`);
     if (!inGroup(main.id, isConclusions, "Sentence")) problems.push(`the main End ${q(main.id)}'s Sentence is listed by no Conclusions entry`);
@@ -246,12 +246,12 @@ function runLint(args, out) {
   if (rest.length !== 1) throw new UsageError("lint-outline takes the outline");
   const path = rest[0];
   const paperDir = dirname(dirname(resolve(path)));
-  const { canvas, fields } = loadPaper(paperDir);
+  const { graph, fields } = loadPaper(paperDir);
   const guide = join(writingDir(fields, root, paperDir), "section-guide.md");
   const kindsByGroup = kinds(readText(guide));
   if (kindsByGroup.size === 0) throw new InvalidInput([`${guide}: no Kinds block (\`- \`KIND\` (Group): …\`)`]);
   const outline = parseOutline(readText(path));
-  const problems = lintOutline(outline, { canvas, fields, kindsByGroup, exists: (p) => existsSync(resolve(root, p)) });
+  const problems = lintOutline(outline, { graph, fields, kindsByGroup, exists: (p) => existsSync(resolve(root, p)) });
   if (problems.length > 0) throw new InvalidInput(problems.map((p) => `${path}: ${p}`));
   const unwritten = outline.entries.filter((e) => e.fields.context === "?").map((e) => e.id);
   out(`ok ${path}: ${outline.entries.length} entries${unwritten.length > 0 ? `; context ? on ${unwritten.join(", ")}` : ""}\n`);
@@ -336,14 +336,14 @@ export function bibEntries(text) {
 }
 
 /**
- * Problems of a text against its outline, canvas and paper.md. `units` are the
+ * Problems of a text against its outline, argument.json and paper.md. `units` are the
  * text's paragraphs, `sources` the texts numbers may come from, `bib` the
  * refs.bib entries, `labelled` whether a library key has calibration labels.
  */
-export function checkText({ units: us, outline, canvas, fields = {}, sources = [], bib = new Map(), cited = [], labelled = () => true }) {
+export function checkText({ units: us, outline, graph, fields = {}, sources = [], bib = new Map(), cited = [], labelled = () => true }) {
   const problems = [];
   const entries = new Map(outline.entries.map((e) => [e.id, e]));
-  const cards = new Map(textCards(canvas).map((c) => [c.id, c]));
+  const cards = new Map(graph.arguments.map((a) => [a.id, a]));
 
   // every entry executed once, every paragraph traced
   const count = new Map();
@@ -376,17 +376,17 @@ export function checkText({ units: us, outline, canvas, fields = {}, sources = [
   const limit = Number.parseInt(fields["abstract limit"] ?? "", 10);
   if (Number.isFinite(limit) && abstractWords > limit) problems.push(`the abstract has ${abstractWords} words; the journal's limit is ${limit}`);
 
-  // numbers: every one from the canvas or a file it names; in the abstract and conclusions, from an End or its Grounds
+  // numbers: every one from argument.json or a file it names; in the abstract and conclusions, from an End or its Grounds
   const all = sourceNumbers(sources);
-  const ends = [...cards.values()].filter((c) => c.id.startsWith("e-"));
+  const ends = [...cards.values()].filter((c) => c.kind === "end");
   const endIds = new Set(ends.map((c) => c.id));
   const endSide = new Set(endIds);
-  for (const edge of canvas.edges ?? []) if (endIds.has(edge.toNode) && edge.label === "Grounds") endSide.add(edge.fromNode);
-  const endNumbers = sourceNumbers([...endSide].filter((id) => cards.has(id)).map((id) => ({ text: cards.get(id).text })));
+  for (const edge of graph.edges) if (endIds.has(edge.to) && edge.role === "grounds") endSide.add(edge.from);
+  const endNumbers = sourceNumbers([...endSide].filter((id) => cards.has(id)).map((id) => ({ text: argumentText(cards.get(id)) })));
   for (const u of us) {
     const closing = isAbstract(sec(u)) || isConclusions(sec(u));
     const missing = [...new Set(numbersOf(u.prose).filter((n) => !stated(n, all)).map((n) => n.n))];
-    if (missing.length > 0) problems.push(`${u.file}: paragraph ${q(u.id)} states ${missing.join(", ")}, found on no card and in no file the canvas or the outline names`);
+    if (missing.length > 0) problems.push(`${u.file}: paragraph ${q(u.id)} states ${missing.join(", ")}, found on no card and in no file argument.json or the outline names`);
     if (closing) {
       const off = [...new Set(numbersOf(u.prose).filter((n) => stated(n, all) && !stated(n, endNumbers)).map((n) => n.n))];
       if (off.length > 0) problems.push(`${u.file}: paragraph ${q(u.id)} (${group(u)}) states ${off.join(", ")}, on no End card and no card its Grounds name`);
@@ -399,9 +399,9 @@ export function checkText({ units: us, outline, canvas, fields = {}, sources = [
     for (const ref of cardList(entries.get(u.id)?.fields.cards)) {
       const card = cards.get(ref.id);
       if (!card || !endIds.has(card.id) || (ref.parts.length > 0 && !ref.parts.includes("Qualifier"))) continue;
-      const qualifier = section(card.text, "Qualifier");
+      const qualifier = part(card, "Qualifier");
       if (!qualifier) continue;
-      const claim = new Set(words(section(card.text, "Claim") ?? ""));
+      const claim = new Set(words(part(card, "Claim") ?? ""));
       const marks = new Set([...numbersOf(qualifier).map((n) => n.n), ...words(qualifier).filter((w) => w.length >= 5 && !STOP.has(w) && !claim.has(w))]);
       const text = u.prose.toLowerCase();
       if (![...marks].some((m) => (/^\d/.test(m) ? numbersOf(u.prose).some((n) => n.n === m) : text.includes(m)))) {
@@ -420,9 +420,9 @@ export function checkText({ units: us, outline, canvas, fields = {}, sources = [
   };
   for (const card of cards.values()) {
     const isEnd = endIds.has(card.id);
-    addGrams(title(card.text), COPY_SHORT, card.id);
-    for (const part of ["Warrant", "Backing", "Qualifier", "Rebuttal"]) addGrams(section(card.text, part) ?? "", COPY_SHORT, card.id);
-    if (!isEnd) for (const part of ["Claim", "Grounds"]) addGrams(section(card.text, part) ?? "", COPY_LONG, card.id);
+    addGrams(card.title, COPY_SHORT, card.id);
+    for (const name of ["Warrant", "Backing", "Qualifier", "Rebuttal"]) addGrams(part(card, name) ?? "", COPY_SHORT, card.id);
+    if (!isEnd) for (const name of ["Claim", "Grounds"]) addGrams(part(card, name) ?? "", COPY_LONG, card.id);
   }
   for (const u of us) {
     const ws = plain(u.prose);
@@ -436,8 +436,8 @@ export function checkText({ units: us, outline, canvas, fields = {}, sources = [
   }
 
   // the main End's Sentence, word for word, in the abstract and the conclusions
-  const main = mainEnd(canvas);
-  const sentence = main ? words(prose(section(main.text, "Sentence") ?? "")).join(" ") : "";
+  const main = mainEnd(graph);
+  const sentence = main ? words(prose(main.sentence ?? "")).join(" ") : "";
   if (sentence) {
     for (const [name, inSection] of [["abstract", isAbstract], ["conclusions", isConclusions]]) {
       const text = words(us.filter((u) => inSection(sec(u))).map((u) => u.prose).join(" ")).join(" ");
@@ -445,9 +445,9 @@ export function checkText({ units: us, outline, canvas, fields = {}, sources = [
     }
   }
 
-  // citations: in refs.bib, and standing on a card
-  const libraryKeys = new Set(textCards(canvas).flatMap((c) => libraryRefs(c.text).map((r) => r.paper)));
-  const canvasText = textCards(canvas).map((c) => c.text).join("\n").toLowerCase();
+  // citations: in refs.bib, and standing on a card: one of its library cards, or its bibcode or DOI on a card
+  const libraryKeys = new Set(graph.arguments.flatMap((a) => references(a).filter((r) => r.type === "library").map((r) => r.paper)));
+  const graphText = graph.arguments.map(argumentText).join("\n").toLowerCase();
   for (const key of new Set(cited)) {
     if (!bib.has(key)) {
       problems.push(`\\cite key ${q(key)} is not in refs.bib`);
@@ -456,7 +456,7 @@ export function checkText({ units: us, outline, canvas, fields = {}, sources = [
     if (libraryKeys.has(key)) continue;
     const entry = bib.get(key).toLowerCase();
     const ids = [/doi\s*=\s*\{([^}]+)\}/.exec(entry)?.[1], /abs\/([^/}\s]+)/.exec(entry)?.[1]].filter(Boolean).map((s) => s.replace(/%26/g, "&"));
-    if (!ids.some((id) => canvasText.includes(id))) problems.push(`\\cite key ${q(key)} stands on no card: no card names it, its DOI or its bibcode`);
+    if (!ids.some((id) => graphText.includes(id))) problems.push(`\\cite key ${q(key)} stands on no card: no card names it, its DOI or its bibcode`);
   }
   return problems;
 }
@@ -466,7 +466,7 @@ function runCheck(args, out) {
   if (rest.length !== 1) throw new UsageError("check takes a version directory (vN or final)");
   const dir = resolve(rest[0]);
   const paperDir = dirname(dir);
-  const { canvas, fields } = loadPaper(paperDir);
+  const { graph, fields } = loadPaper(paperDir);
   const outline = parseOutline(readText(join(dir, "outline.md")));
   const sectionsDir = join(dir, "sections");
   let names;
@@ -479,9 +479,11 @@ function runCheck(args, out) {
   const tex = files.map((f) => f.text).join("\n") + (existsSync(join(dir, "main.tex")) ? `\n${readText(join(dir, "main.tex"))}` : "");
   const cited = [...tex.matchAll(/\\cite[a-z]*\*?(?:\[[^\]]*\])*\{([^}]+)\}/g)].flatMap((m) => m[1].split(",").map((k) => k.trim()));
 
-  const named = new Set(textCards(canvas).flatMap((c) => fileRefs(c.text)));
+  const ids = new Set([...graph.arguments, ...graph.figures].map((n) => n.id));
+  const named = new Set(graph.arguments.flatMap((a) => filesOf(a, ids)));
+  for (const f of graph.figures) if (f.file) named.add(f.file);
   for (const e of outline.entries) for (const f of contextFiles(e.fields.context)) named.add(f);
-  const sources = [{ text: textCards(canvas).map((c) => c.text).join("\n") }];
+  const sources = [{ text: graph.arguments.map(argumentText).join("\n") }];
   for (const p of named) {
     const full = resolve(root, p);
     if (!existsSync(full) || !statSync(full).isFile() || statSync(full).size > 5e6 || /\.(png|pdf|jpe?g|svg|eps|gif)$/i.test(p)) continue;
@@ -493,7 +495,7 @@ function runCheck(args, out) {
   const problems = checkText({
     units: units(files),
     outline,
-    canvas,
+    graph,
     fields,
     sources,
     bib,
@@ -506,16 +508,16 @@ function runCheck(args, out) {
 
 // ---------------------------------------------------------------- cites
 
-/** `key=bibcode` for each library paper the canvas names, and the Cites lines that name none. */
-export function cites(canvas, meta) {
+/** `key=bibcode` for each library paper argument.json names, by a library card or by its bibcode, and the bibcodes of no library paper. */
+export function cites(graph, meta) {
   const keys = new Set();
   const outside = [];
-  for (const card of textCards(canvas)) {
-    for (const r of libraryRefs(card.text)) keys.add(r.paper);
-    for (const line of (card.text ?? "").split("\n").filter((l) => l.trim().startsWith("Cites:"))) {
-      const match = [...meta].find(([k, m]) => [k, m.doi, m.bibcode].some((id) => id && line.toLowerCase().includes(String(id).toLowerCase())));
-      if (match) keys.add(match[0]);
-      else outside.push(line.trim().replace(/^Cites:\s*/, ""));
+  const byBibcode = new Map([...meta].filter(([, m]) => m.bibcode).map(([k, m]) => [m.bibcode, k]));
+  for (const arg of graph.arguments) {
+    for (const r of references(arg).filter((r) => r.type === "library")) keys.add(r.paper);
+    for (const bibcode of arg.cites) {
+      if (byBibcode.has(bibcode)) keys.add(byBibcode.get(bibcode));
+      else outside.push(bibcode);
     }
   }
   const pairs = [];
@@ -531,14 +533,14 @@ export function cites(canvas, meta) {
 function runCites(args, out) {
   const { rest, root } = options(args);
   if (rest.length !== 1) throw new UsageError("cites takes the paper's directory");
-  const { canvas, fields } = loadPaper(resolve(rest[0]));
+  const { graph, fields } = loadPaper(resolve(rest[0]));
   const library = resolve(root, fields.library ?? ".");
   const meta = new Map();
   for (const d of existsSync(library) ? readdirSync(library) : []) {
     const p = join(library, d, "meta.json");
     if (existsSync(p)) meta.set(d, JSON.parse(readFileSync(p, "utf-8")));
   }
-  const { pairs, missing, outside } = cites(canvas, meta);
+  const { pairs, missing, outside } = cites(graph, meta);
   for (const p of pairs) out(`${p}\n`);
   for (const k of missing) out(`no bibcode: ${k} (no meta.json with a bibcode)\n`);
   for (const line of outside) out(`outside the library: ${line}\n`);

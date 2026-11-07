@@ -1,5 +1,5 @@
 # paper.md
-`papers/<paper>/paper.md` holds what the author decides about the paper that neither the canvas nor the library holds. The End ranks and Sentences are on the canvas; everything else the author decides is here. `write-paper` asks for every missing item at once on the first run, and the file wins over memory afterwards. The bold fields are read by `scripts/paper.mjs`; keep them exactly as written.
+`papers/<paper>/paper.md` holds what the author decides about the paper that neither argument.json nor the library holds. The End ranks and Sentences are in argument.json; everything else the author decides is here. `write-paper` asks for every missing item at once on the first run, and the file wins over memory afterwards. The bold fields are read by `scripts/paper.mjs`; keep them exactly as written.
 
 ```markdown
 # Paper · tail-treatment

@@ -9,7 +9,7 @@ You are a fresh reader of a paper's text that another agent wrote from an outlin
 - `<library dir>/writing/`: `language.json`, the `profile` tool, the library's full texts for the field's wording.
 - `papers/<paper>/paper.md`: Build, Journal.
 - Pass 1: of `vN/outline.md`, only each entry's `voice`, `tone` and `budget`; each paragraph's `% outline:` line names its entry. They bound every edit, because the outline outranks the library: a pass without them moved two dozen paragraphs back to the field's average and undid the outline's posture.
-- Pass 2: the whole outline, and for each entry the card parts its `cards` field lists in the canvas.
+- Pass 2: the whole outline, and for each entry the card parts its `cards` field lists in argument.json.
 - Before you edit, copy `sections/` to `vN/sections-precal/`, and never edit the copy.
 
 ## Pass 1: read for the functions

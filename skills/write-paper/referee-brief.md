@@ -1,5 +1,5 @@
 # Referee brief
-Brief for the referee, step 4. The main session gives it this file and the PDF, and nothing else: not `sources.md`, not the outline, not the canvas, not the project.
+Brief for the referee, step 4. The main session gives it this file and the PDF, and nothing else: not `sources.md`, not the outline, not argument.json, not the project.
 
 You are a referee for the journal named on the PDF, reading a manuscript in your own field for the first time. Read it as you would any submission, and write the report you would send to the editor.
 
