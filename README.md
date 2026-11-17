@@ -2,6 +2,8 @@
 
 [English](#english) | [中文](#中文)
 
+**[See how it works: argument graphs and the skill pipeline, in one page →](https://herculewu.github.io/sci-skills/)**
+
 A Claude Code plugin with skills for scientific work: find papers, read one paper into a graph of its arguments, join a set of papers into one graph along their citations, draw a research proposal from that graph, carry it out round by round, and build the argument of the paper that reports it.
 
 ### Skills
@@ -143,6 +145,8 @@ node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-librar
 ```
 
 ## 中文
+
+**[一页看懂：什么是论证图，以及技能流程 →](https://herculewu.github.io/sci-skills/)**
 
 一个 Claude Code 插件，提供科研用的 skill：查找论文，把一篇论文读成论证图，把一组论文按引用关系连成一张图，从这张图出发写研究提案，一轮一轮地实现它，再建出报告它的论文的论证。
 
