@@ -1,0 +1,5 @@
+interface:
+  display_name: "Implement Proposal"
+  short_description: "Carry out one research round and record judgements"
+policy:
+  allow_implicit_invocation: false

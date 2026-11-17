@@ -7,7 +7,7 @@ disable-model-invocation: true
 Turn the judgements recorded by `implement-proposal` into the Argument DAG of the paper that will report them: what the paper claims, on which judgements each Claim rests, and what it delivers to whom. The graph is the one source of what is true for `write-paper`, so every error left in it reaches the text unseen. The author owns it; this skill drafts it and, on later runs, brings in what new rounds established.
 
 ## Language
-Terms in bold are defined in the sci-skills glossary, loaded at session start. If it is not in your context, read `${CLAUDE_PLUGIN_ROOT}/GLOSSARY.md` first.
+Terms in bold are defined in the sci-skills glossary, loaded at session start. If it is not in your context, read `../../GLOSSARY.md` first (paths in this skill are relative to its folder).
 
 Words this skill uses in its own sense:
 - *judgement*: a Conjecture the user judged held or failed in a handed-over round, named `<name>/round-<k>:C<n>`.
@@ -51,7 +51,7 @@ Stop for the author twice: after step 1 and after step 3. Each stop asks everyth
 **Goal**: every End stands on a chain of cards from Natives through Methods and Results, and every judgement has its place or is named as left out.
 
 - Work from each End down. A card exists because a card above uses it; a card that only restates others, or is used only as a caveat, is folded into the card it serves.
-- Natives come from the library cards that the rounds' canvases cite and that the chains need; read them with `library.mjs card` (`${CLAUDE_PLUGIN_ROOT}/skills/build-argument-library/scripts/library.mjs`). The gap (`i-`) is what the rounds' goal cards said the library lacks.
+- Natives come from the library cards that the rounds' canvases cite and that the chains need; read them with `library.mjs card` (`../build-argument-library/scripts/library.mjs`). The gap (`i-`) is what the rounds' goal cards said the library lacks.
 - One Method card carries the setup and the yardstick most Results use; a Result names it as its Warrant.
 - A Claim says what was measured, against what, how large, and under which conditions; its limits go in the Qualifier, never into a weakened Claim.
 - A derived number gets its file before it gets its card.
@@ -69,7 +69,7 @@ A guide to the graph; the cards speak for themselves.
 **At the first stop**: the proposed Ends, one block each (Claim, judgements, Rank, Sentence, reader), then the failed judgements that fit nowhere and the readings found, then the questions.
 
 **At hand-over**:
-1. Where `argument.json` is, and the viewer to open it with (`${CLAUDE_PLUGIN_ROOT}/skills/build-paper-argument/viewer.html`).
+1. Where `argument.json` is, and the viewer to open it with (`viewer.html` in this skill's folder).
 2. Each End with its Rank and Sentence, and the main chain under it.
 3. The shape beside the library's median.
 4. The `fault:` lines left, with why each card stands.

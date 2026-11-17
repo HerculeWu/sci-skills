@@ -7,7 +7,7 @@ disable-model-invocation: true
 Write one **version** of a paper: from the paper's Argument DAG (`build-paper-argument`) and the library's calibration (`calibrate-to-library`), fresh agents write an outline, the text, a calibration with a review, and a referee's report. Each version is written afresh from its sources, never patched from the last ([ADR 0001](../../docs/adr/0001-recompile-each-version.md)): a fault found in a version is repaired in the argument graph, in the outline, or as a check, and the next version shows whether the repair held.
 
 ## Language
-Terms in bold are defined in the sci-skills glossary, loaded at session start. If it is not in your context, read `${CLAUDE_PLUGIN_ROOT}/GLOSSARY.md` first.
+Terms in bold are defined in the sci-skills glossary, loaded at session start. If it is not in your context, read `../../GLOSSARY.md` first (paths in this skill are relative to its folder).
 
 Words this skill uses in its own sense:
 - *version*: `papers/<paper>/vN/`, everything one run writes.
@@ -35,7 +35,7 @@ Every file is in English, whatever language the conversation is in; only the rep
 - **The author decides; the agents report.** No step edits a card, and only the outline agent writes the outline. Card faults and outline faults go to the author.
 
 ## Steps
-`scripts/paper.mjs` (`${CLAUDE_PLUGIN_ROOT}/skills/write-paper/scripts/paper.mjs`) does what must come out the same every version: `lint-outline`, `check`, `cites`. Each brief names the files a step reads; give the subagent the brief, `sources.md`, those paths with `<paper>`, `vN` and the library filled in, and the full paths of the scripts it runs. Ask each for its report as text too, in case it cannot write a file.
+`scripts/paper.mjs` does what must come out the same every version: `lint-outline`, `check`, `cites`. Each brief names the files a step reads; give the subagent the brief, `sources.md`, those paths with `<paper>`, `vN` and the library filled in, and the full paths of the scripts it runs. Ask each for its report as text too, in case it cannot write a file.
 
 ### 0. Prepare
 **Goal**: every input is in place and the author has decided everything `paper.md` asks, before any agent starts.

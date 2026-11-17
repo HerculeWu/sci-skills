@@ -6,7 +6,7 @@ description: Read and understand a paper, and write its argument structure as an
 Break down a research paper into a network of interconnected arguments using the **Toulmin Model of Argumentation** as a foundation. By formalizing text into a Directed Acyclic Graph (DAG) structure --- **Argument DAG**, you can bypass rhetorical filler and directly see a paper's logical integrity
 
 ## Languages
-Terms in bold are defined in the sci-skills glossary, loaded at session start. If it is not in your context, read `${CLAUDE_PLUGIN_ROOT}/GLOSSARY.md` first.
+Terms in bold are defined in the sci-skills glossary, loaded at session start. If it is not in your context, read `../../GLOSSARY.md` first (paths in this skill are relative to its folder).
 
 Every argument you record has a Claim, Grounds and a Warrant. When the paper leaves the Warrant unstated, write the one you infer and mark it `(implicit)`.
 

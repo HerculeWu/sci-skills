@@ -1,0 +1,3 @@
+interface:
+  display_name: "Read a Paper"
+  short_description: "Map a paper's argument as an Obsidian canvas"

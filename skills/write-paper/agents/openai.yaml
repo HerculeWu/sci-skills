@@ -1,0 +1,5 @@
+interface:
+  display_name: "Write Paper"
+  short_description: "Write one version of the paper from its argument"
+policy:
+  allow_implicit_invocation: false

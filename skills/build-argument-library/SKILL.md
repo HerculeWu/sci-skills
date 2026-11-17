@@ -7,7 +7,7 @@ disable-model-invocation: true
 Build an **Argument Library**: one Obsidian canvas in which the **Argument DAG** of every paper in a set is joined to the others along the citations between them. A reader can then follow a chain of evidence from one paper's **End Argument** down into the papers it rests on.
 
 ## Language
-Terms in bold are defined in the sci-skills glossary, loaded at session start. If it is not in your context, read `${CLAUDE_PLUGIN_ROOT}/GLOSSARY.md` first.
+Terms in bold are defined in the sci-skills glossary, loaded at session start. If it is not in your context, read `../../GLOSSARY.md` first (paths in this skill are relative to its folder).
 
 ## Input
 A set of papers. Which papers, and where their full text is, come from the user; ask when either is unclear.

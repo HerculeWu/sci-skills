@@ -7,7 +7,7 @@ disable-model-invocation: true
 Measure how the papers of an Argument Library are written, so that `write-paper` can write a paper the field reads as its own. A paper drafted from rules and impressions reads as an agent's; one set beside the field's measured forms, and copied from its paragraphs where they fit, does not. This runs once per library, and again when the library grows; every paper in the field reuses what it leaves.
 
 ## Language
-Terms in bold are defined in the sci-skills glossary, loaded at session start. If it is not in your context, read `${CLAUDE_PLUGIN_ROOT}/GLOSSARY.md` first.
+Terms in bold are defined in the sci-skills glossary, loaded at session start. If it is not in your context, read `../../GLOSSARY.md` first (paths in this skill are relative to its folder).
 
 Words this skill uses in its own sense:
 - *kind*: what a paragraph does in its paper (opens the stakes, defines a quantity, works through a representative case …). A paper is a sequence of kinds; a section is a stretch of it.
@@ -27,7 +27,7 @@ Words this skill uses in its own sense:
 - `language.json`: the register ranges, per group;
 - `tools/`: the scripts that split, label-check and measure, so that `write-paper` measures its drafts the same way.
 
-Missing Shorts are written in `research-proposal`'s format (`${CLAUDE_PLUGIN_ROOT}/skills/research-proposal/short.md`). Every file is in English, whatever language the conversation is in; only the reply is in the user's language.
+Missing Shorts are written in `research-proposal`'s format (`../research-proposal/short.md`). Every file is in English, whatever language the conversation is in; only the reply is in the user's language.
 
 ## What the calibration stands on
 - **The library, not a style manual.** Every kind, order, proportion and range comes from these papers. The field already wrote most of the paragraphs a paper needs, so the most useful output is where to find them.

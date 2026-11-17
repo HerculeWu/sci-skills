@@ -124,6 +124,15 @@ In Claude Code:
 /plugin install sci-skills@sci-skills
 ```
 
+In Codex:
+
+```bash
+codex plugin marketplace add HerculeWu/sci-skills
+codex plugin add sci-skills@sci-skills
+```
+
+Codex reads the same `.claude-plugin/` manifest. Review and trust the plugin's hook when Codex asks, so the glossary loads. The skills that start only when you call them (the table's last column) are called with `$`, as in `$build-argument-library`.
+
 ### Requirements
 
 - Node 18 or later, for the scripts.
@@ -267,6 +276,15 @@ node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-librar
 /plugin marketplace add HerculeWu/sci-skills
 /plugin install sci-skills@sci-skills
 ```
+
+在 Codex 里：
+
+```bash
+codex plugin marketplace add HerculeWu/sci-skills
+codex plugin add sci-skills@sci-skills
+```
+
+Codex 读的是同一份 `.claude-plugin/` 清单。Codex 问到时，审核并信任插件的 hook，词表才会加载。只能手动启动的 skill（表格最后一列）用 `$` 调用，例如 `$build-argument-library`。
 
 ### 依赖
 

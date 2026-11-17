@@ -1,0 +1,5 @@
+interface:
+  display_name: "Build Argument Library"
+  short_description: "Join papers' argument graphs along their citations"
+policy:
+  allow_implicit_invocation: false

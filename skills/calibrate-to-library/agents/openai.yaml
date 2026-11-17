@@ -1,0 +1,5 @@
+interface:
+  display_name: "Calibrate to Library"
+  short_description: "Measure how a library's papers are written"
+policy:
+  allow_implicit_invocation: false

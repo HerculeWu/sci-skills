@@ -7,7 +7,7 @@ disable-model-invocation: false
 Turn a vague research idea into a proposal: an Obsidian canvas that adds one layer of **Conjectures** on top of an **Argument Library**, each hung on the **Verification** that would produce its Grounds. Research runs in rounds -- propose, implement, analyse, propose again, with collaborators in between. This skill writes the proposal of one round; implementing it and judging its outcomes belong to the user.
 
 ## Language
-Terms in bold are defined in the sci-skills glossary, loaded at session start. If it is not in your context, read `${CLAUDE_PLUGIN_ROOT}/GLOSSARY.md` first.
+Terms in bold are defined in the sci-skills glossary, loaded at session start. If it is not in your context, read `../../GLOSSARY.md` first (paths in this skill are relative to its folder).
 
 Words this skill uses in its own sense:
 - *goal*: the question the idea asks. A question, not a claim.
@@ -42,7 +42,7 @@ Every file is written in English, whatever language the conversation is in, beca
 ## Steps
 Stop for the user at most three times: step 0 (only when Shorts are missing), step 1 and step 3. Each stop asks everything it needs at once.
 
-The library canvas is read card by card through `${CLAUDE_PLUGIN_ROOT}/skills/build-argument-library/scripts/library.mjs`: `card <library.canvas> <paper:card>` prints one card, `uses <library.canvas> <paper:card>` lists every card that depends on it.
+The library canvas is read card by card through `../build-argument-library/scripts/library.mjs`: `card <library.canvas> <paper:card>` prints one card, `uses <library.canvas> <paper:card>` lists every card that depends on it.
 
 ### 0. Shorts (only when some are missing)
 **Goal**: every paper of the library has a Short, so that whether to open a paper for an element can be decided without opening its canvas.

@@ -7,7 +7,7 @@ disable-model-invocation: true
 Carry out one **Round** of a proposal: produce the Grounds that the Verifications on `round-N.canvas` promise, hand each Conjecture's result to the user set against its criterion, and record the user's judgement. A round spans many sessions -- allocations, runs that take days, Needs ✗ to settle -- so this skill runs once at the start of each session: orient, agree on what this session does, carry it to a pause point, record it.
 
 ## Language
-Terms in bold are defined in the sci-skills glossary, loaded at session start. If it is not in your context, read `${CLAUDE_PLUGIN_ROOT}/GLOSSARY.md` first.
+Terms in bold are defined in the sci-skills glossary, loaded at session start. If it is not in your context, read `../../GLOSSARY.md` first (paths in this skill are relative to its folder).
 
 Words this skill uses in its own sense:
 - *costly* / *cheap*: as the glossary defines them for a Verification.

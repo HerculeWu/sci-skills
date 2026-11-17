@@ -1,0 +1,3 @@
+interface:
+  display_name: "Find Papers"
+  short_description: "Find papers on a topic through NASA ADS"
