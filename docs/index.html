@@ -142,6 +142,62 @@ h2{font:700 clamp(28px,4vw,40px)/1.15 var(--display);margin:0 0 10px;text-wrap:b
 .legend span{display:inline-flex;align-items:center;gap:7px}
 .pipe svg{min-width:940px}
 
+/* argelander space */
+.as{display:grid;gap:22px}
+.as h2 .brand{background:linear-gradient(100deg,var(--backing),var(--grounds));-webkit-background-clip:text;background-clip:text;color:transparent}
+.as .lead{margin:0}
+.shotframe{border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--panel2);
+  box-shadow:0 0 0 1px rgba(0,0,0,.3),0 40px 90px -30px color-mix(in srgb,var(--grounds) 40%,transparent)}
+.chrome{display:flex;gap:7px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line);font:500 11.5px var(--mono);color:var(--muted)}
+.chrome i{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.chrome i:nth-child(1){background:var(--rebut)} .chrome i:nth-child(2){background:var(--claim)} .chrome i:nth-child(3){background:var(--ok)}
+.chrome span{margin-left:8px}
+.shotframe img,.feat img{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;max-width:100%}
+.shotcap{font-size:13px;color:var(--muted);padding:10px 14px}
+.tour{display:grid;grid-template-columns:minmax(0,290px) minmax(0,1fr);gap:20px;align-items:start}
+.rail{list-style:none;margin:0;padding:0;display:grid;gap:8px;position:relative}
+.rail::before{content:"";position:absolute;left:21px;top:22px;bottom:22px;width:2px;background:linear-gradient(var(--read),var(--read) 55%,var(--res) 70%,var(--write))}
+.rail button{position:relative;width:100%;display:flex;gap:12px;align-items:center;text-align:left;background:transparent;border:1px solid transparent;border-radius:14px;padding:10px 12px 10px 8px;color:var(--ink);cursor:pointer;font:inherit;box-shadow:none}
+.rail button b{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:700 13px var(--mono);background:var(--panel2);color:var(--c);border:2px solid var(--c);z-index:1}
+.rail button span{display:grid;min-width:0}
+.rail button em{font:700 15px var(--display);font-style:normal}
+.rail button small{font:500 11px var(--mono);color:var(--muted);overflow-wrap:anywhere}
+.rail button:hover{border-color:var(--line)}
+.rail button[aria-selected="true"]{background:color-mix(in srgb,var(--c) 12%,var(--panel));border-color:color-mix(in srgb,var(--c) 55%,transparent)}
+.rail button[aria-selected="true"] b{background:var(--c);color:var(--bg);box-shadow:0 0 16px var(--c)}
+.rail button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.shotbox{aspect-ratio:16/10;background:var(--panel2);display:grid;place-items:center;overflow:hidden}
+.shotbox img{width:100%;height:100%;object-fit:contain;aspect-ratio:auto;transition:opacity .25s}
+.shotbox img.fade{opacity:0}
+.soon{font:700 10px var(--mono);font-style:normal;letter-spacing:.06em;text-transform:uppercase;color:var(--bg);background:var(--claim);border-radius:99px;padding:1px 7px;margin-left:8px;vertical-align:2px}
+.shotbox{position:relative}
+.soonbadge{display:none;position:absolute;z-index:1;top:14px;right:14px;font:700 13px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--bg);background:var(--claim);border-radius:99px;padding:6px 14px;box-shadow:0 0 24px -4px var(--claim)}
+.shotbox.is-soon .soonbadge{display:block}
+.shotbox.is-soon img{filter:saturate(.35) brightness(.6)}
+.chrome strong{color:var(--ink);font-weight:700}
+.shotcap b{color:var(--ink);font-weight:600}
+.entries h3{font:700 20px var(--display);margin:6px 0 12px}
+.erow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1.2fr) auto minmax(0,1fr);gap:12px;align-items:center}
+.ecard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:6px;min-width:0}
+.ecard.core{border-color:color-mix(in srgb,var(--grounds) 60%,transparent);box-shadow:0 0 40px -14px var(--grounds)}
+.ecard b{font:700 15px var(--display)}
+.ecard p{margin:0;font-size:13px;color:var(--muted)}
+.ecard code{font:500 12px var(--mono);color:var(--grounds)}
+.eico{font:700 18px var(--mono);color:var(--grounds)}
+.earrow{font:700 22px var(--mono);color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{font:600 12px var(--sans);padding:3px 10px;border-radius:99px;border:1px solid var(--c);color:var(--c)}
+@media (max-width:860px){.tour{grid-template-columns:minmax(0,1fr)}.rail::before{display:none}
+  .erow{grid-template-columns:minmax(0,1fr)}.earrow{justify-self:center;transform:rotate(90deg)}}
+.cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.cta a{font:700 14px var(--mono);text-decoration:none;border-radius:99px;padding:11px 20px}
+.cta a.primary{color:var(--bg);background:linear-gradient(100deg,var(--backing),var(--grounds));box-shadow:0 0 28px -6px var(--grounds)}
+.cta a.ghost{color:var(--ink);border:1px solid var(--line)}
+.cta a:hover,.cta a:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.cta small{color:var(--muted);font-size:12.5px}
+.credit{font-size:11.5px;color:var(--muted);margin:0}
+@media (prefers-reduced-motion:reduce){.shotbox img{transition:none}}
+
 /* outlook */
 .blob{fill:color-mix(in srgb,var(--na) 14%,var(--panel2));stroke:var(--na);stroke-width:1.5}
 .prob rect{fill:color-mix(in srgb,var(--rebut) 10%,var(--panel2));stroke:var(--rebut);stroke-width:1.2}
@@ -186,7 +242,7 @@ footer{padding-block:40px 56px;color:var(--muted);font-size:12.5px}
     <div class="eyebrow">sci-skills · 8 skills</div>
     <h1>Argument Graph</h1>
     <p class="tag" data-en="Read papers into argument graphs. Then conjecture, research and write papers on the graph.">把论文读成论证图。在图上提出猜想、做研究、写论文。</p>
-    <nav class="nav"><a href="#graph" data-en="What is an argument graph">什么是论证图</a><a href="#pipeline" data-en="Skill pipeline">技能流程</a><a href="#outlook" data-en="Outlook">展望</a></nav>
+    <nav class="nav"><a href="#graph" data-en="What is an argument graph">什么是论证图</a><a href="#pipeline" data-en="Skill pipeline">技能流程</a><a href="#argelander">ArgelanderSpace</a><a href="#outlook" data-en="Outlook">展望</a></nav>
   </div>
 </header>
 
@@ -455,8 +511,51 @@ footer{padding-block:40px 56px;color:var(--muted);font-size:12.5px}
   </div>
 </section>
 
+<section id="argelander" class="as">
+  <div>
+    <p class="part">Part 3</p>
+    <h2><span data-en="The workbench built for these skills">这套技能的专用工作台</span><br><span class="brand">ArgelanderSpace</span></h2>
+    <p class="lead" data-en="Every step of sci-skills has a matching screen in ArgelanderSpace. The agent does the work; you look, correct and decide in the same place, on your own computer.">sci-skills 的每一步，在 ArgelanderSpace 里都有对应的界面。智能体去跑，你在同一个地方看、改、拍板，数据都在你自己的电脑上。</p>
+  </div>
+
+  <div class="tour">
+    <ol class="rail" role="tablist" aria-label="Skill steps">
+      <li><button type="button" role="tab" data-i="0" style="--c:var(--read)"><b>1</b><span><em data-en="Find papers, build the library">找文献、建库</em><small>find-papers · build-argument-library</small></span></button></li>
+      <li><button type="button" role="tab" data-i="1" style="--c:var(--read)"><b>2</b><span><em data-en="Read a paper">读论文</em><small>read-a-paper</small></span></button></li>
+      <li><button type="button" role="tab" data-i="2" style="--c:var(--read)"><b>3</b><span><em data-en="Map its argument">画出论证图</em><small>read-a-paper · Argument DAG</small></span></button></li>
+      <li><button type="button" role="tab" data-i="3" style="--c:var(--res)"><b>4</b><span><em data-en="Propose and carry out">提案与实施</em><i class="soon" data-en="Coming soon">即将推出</i><small>research-proposal · implement-proposal</small></span></button></li>
+      <li><button type="button" role="tab" data-i="4" style="--c:var(--write)"><b>5</b><span><em data-en="Write the paper">写论文</em><i class="soon" data-en="Coming soon">即将推出</i><small>build-paper-argument · write-paper</small></span></button></li>
+    </ol>
+    <figure class="shotframe" style="margin:0">
+      <div class="chrome"><i></i><i></i><i></i><span>ArgelanderSpace · <strong id="tourScreen"></strong></span></div>
+      <div class="shotbox" id="tourBox"><span class="soonbadge" data-en="Coming soon">即将推出</span><img id="tourImg" src="assets/argelander/zh/library.webp" width="1600" height="1000" alt=""></div>
+      <figcaption class="shotcap" id="tourCap"></figcaption>
+    </figure>
+  </div>
+
+  <div class="entries">
+    <h3 data-en="Two ways in, one project">两个入口，同一个项目</h3>
+    <div class="erow">
+      <div class="ecard"><div class="eico">&gt;_</div><b data-en="Agents in your terminal">终端里的智能体</b><p data-en="Claude Code and others reach the project through the <code>argelanderspace</code> command and its bundled plugin.">Claude Code 等通过 <code>argelanderspace</code> 命令和自带插件进入项目。</p></div>
+      <div class="earrow" aria-hidden="true">⇄</div>
+      <div class="ecard core"><b data-en="Your project">你的项目</b>
+        <div class="chips"><span style="--c:var(--read)" data-en="Library">文献库</span><span style="--c:var(--claim)" data-en="Argument graphs">论证图</span><span style="--c:var(--res)" data-en="Plans">计划</span><span style="--c:var(--write)" data-en="Manuscript">稿件</span></div>
+        <p data-en="Same operations, same result, whichever way in.">同一套操作，从哪个入口进都是同一个结果。</p></div>
+      <div class="earrow" aria-hidden="true">⇄</div>
+      <div class="ecard"><div class="eico">✦</div><b data-en="The Copilot in the workbench">工作台里的 Copilot</b><p data-en="Knows what you are reading, planning and writing, so &quot;this figure&quot; needs no explaining.">知道你正在读、计划、写什么，问「这张图」不用先交代背景。</p></div>
+    </div>
+  </div>
+
+  <div class="cta">
+    <a class="primary" href="https://github.com/HerculeWu/argelanderspace/releases" data-en="Download the desktop app">下载桌面版</a>
+    <a class="ghost" href="https://github.com/HerculeWu/argelanderspace">GitHub</a>
+    <small data-en="Linux · macOS · Windows · MIT · runs locally, no telemetry · pre-release 0.2">Linux · macOS · Windows · MIT · 本地运行，无遥测 · 0.2 预发布</small>
+  </div>
+  <p class="credit" data-en="Screenshots show the tutorial sample; its paper is Jerabkova et al. 2021, arXiv:2103.12080, CC BY 4.0.">截图为教程示例项目，其中论文为 Jerabkova et al. 2021，arXiv:2103.12080，CC BY 4.0。</p>
+</section>
+
 <section id="outlook">
-  <p class="part">Part 3</p>
+  <p class="part">Part 4</p>
   <h2 data-en="Outlook: expert language models">展望：专家语言模型</h2>
   <p class="lead" data-en="We are training a series of expert language models to take part in this workflow and overcome many problems of general-purpose LLMs.">我们正在训练一系列专家语言模型，让它们接进这条工作流，克服通用大语言模型的诸多问题。</p>
   <div class="fig scroll">
@@ -569,6 +668,8 @@ LB.forEach(p=>E('circle',{cx:p[0],cy:p[1],r:7,style:'fill:var(--panel2);stroke:v
 let lang='zh';
 const I18N=[...document.querySelectorAll('[data-en]')];
 I18N.forEach(el=>{el._zh=el.innerHTML;});
+const IMGS=[...document.querySelectorAll('img[data-en-src]')];
+IMGS.forEach(im=>{im._zh=im.getAttribute('src');im._zhAlt=im.alt;});
 const DEF={
  zh:{claim:['CLAIM','作者希望读者接受的结论。'],
      grounds:['GROUNDS','支持主张的证据：数据、观测、事实。'],
@@ -602,9 +703,37 @@ btn.addEventListener('click',()=>{
   setTimeout(()=>{conj.classList.remove('running');conj.classList.add('judged');phase='done';btn.disabled=false;paintRun();},1600);
 });
 
+/* ArgelanderSpace tour: one skill step ↔ one workbench screen */
+const TOUR=[
+ {img:'library',zh:['文献库','ADS 搜索和扩展的结果画在<b>引用图</b>上，留下的论文进入项目文献库，谁建立在谁之上一眼可见。'],
+  en:['Library','ADS search and expansion are drawn on the <b>citation map</b>; the papers you keep enter the project library, and you can see which ones the rest build on.']},
+ {img:'hero',zh:['阅读器 + Copilot','正文提到的图、表、公式就在旁边。问「这个数怎么来的」，<b>Copilot</b> 引着原文段落回答。'],
+  en:['Reader + Copilot','Figures, tables and equations sit beside the text. Ask how a number was derived and the <b>Copilot</b> answers with links to the passages.']},
+ {img:'argument',zh:['论证图','Claim、Grounds、Warrant 一个个摆出来，<b>Native</b> 在底、<b>End</b> 在顶，审计指出环和走不到结论的论证，每一步都能跳回原文。'],
+  en:['Argument graph','Claims, Grounds and Warrants laid out, <b>Native</b> at the bottom and <b>End</b> at the top; the audit flags cycles and dead ends, and every step jumps back to its passage.']},
+ {img:'plans',soon:1,zh:['计划','<b>即将推出：</b>为 research-proposal 和 implement-proposal 做的界面。'],
+  en:['Plans','<b>Coming soon:</b> screens for research-proposal and implement-proposal.']},
+ {img:'writer',soon:1,zh:['Writer','<b>即将推出：</b>为 build-paper-argument 和 write-paper 做的界面。'],
+  en:['Writer','<b>Coming soon:</b> screens for build-paper-argument and write-paper.']}];
+const tabs=[...document.querySelectorAll('.rail button')],timg=document.getElementById('tourImg'),tcap=document.getElementById('tourCap'),tscr=document.getElementById('tourScreen');
+let ti=0,auto=!matchMedia('(prefers-reduced-motion: reduce)').matches,timer=null;
+function paintTour(fade){const t=TOUR[ti],d=t[lang];
+  tabs.forEach((b,i)=>{b.setAttribute('aria-selected',i===ti);b.tabIndex=i===ti?0:-1;});
+  tscr.textContent=d[0];tcap.innerHTML=d[1];timg.alt=d[0];document.getElementById('tourBox').classList.toggle('is-soon',!!t.soon);
+  const src=`assets/argelander/${lang==='en'?'en':'zh'}/${t.img}.webp`;
+  if(fade&&!timg.src.endsWith(src)){timg.classList.add('fade');setTimeout(()=>{timg.src=src;timg.onload=()=>timg.classList.remove('fade');},200);}else timg.src=src;}
+function go(i,user){ti=(i+TOUR.length)%TOUR.length;paintTour(true);if(user){auto=false;clearInterval(timer);}}
+tabs.forEach((b,i)=>{b.addEventListener('click',()=>go(i,true));
+  b.addEventListener('keydown',e=>{if(e.key==='ArrowDown'||e.key==='ArrowRight'){e.preventDefault();go(ti+1,true);tabs[ti].focus();}
+    if(e.key==='ArrowUp'||e.key==='ArrowLeft'){e.preventDefault();go(ti-1,true);tabs[ti].focus();}});});
+if(auto)timer=setInterval(()=>{if(auto)go(ti+1,false);},5000);
+TOUR.forEach(t=>['zh','en'].forEach(l=>{const im=new Image();im.src=`assets/argelander/${l}/${t.img}.webp`;}));
+
 const lz=document.getElementById('lz'),le=document.getElementById('le');
 function setLang(l){lang=l;document.documentElement.lang=l==='en'?'en':'zh-CN';
   I18N.forEach(el=>{el.innerHTML=l==='en'?el.getAttribute('data-en'):el._zh;});
+  IMGS.forEach(im=>{im.src=l==='en'?im.getAttribute('data-en-src'):im._zh;im.alt=l==='en'?im.getAttribute('data-en-alt'):im._zhAlt;});
+  paintTour(false);
   lz.setAttribute('aria-pressed',l==='zh');le.setAttribute('aria-pressed',l==='en');
   document.title=l==='en'?'sci-skills Flow':'sci-skills 流程图';
   show(cur);paintRun();try{localStorage.setItem('lang',l);}catch(e){}}
