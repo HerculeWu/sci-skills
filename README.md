@@ -153,6 +153,10 @@ Codex reads the same `.claude-plugin/` manifest. Review and trust the plugin's h
 node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-library/scripts/library.test.mjs skills/research-proposal/scripts/proposal.test.mjs skills/implement-proposal/scripts/progress.test.mjs skills/build-paper-argument/scripts/json-schema.test.mjs skills/build-paper-argument/scripts/paper-argument.test.mjs skills/write-paper/scripts/paper.test.mjs
 ```
 
+### License
+
+[CC BY-NC-SA 4.0](LICENSE): you may share and adapt this work for non-commercial purposes, with attribution, under the same license.
+
 ## 中文
 
 **[一页看懂：什么是论证图，以及技能流程 →](https://herculewu.github.io/sci-skills/)**
@@ -305,3 +309,7 @@ Codex 读的是同一份 `.claude-plugin/` 清单。Codex 问到时，审核并�
 ```bash
 node --test skills/find-papers/scripts/ads.test.mjs skills/build-argument-library/scripts/library.test.mjs skills/research-proposal/scripts/proposal.test.mjs skills/implement-proposal/scripts/progress.test.mjs skills/build-paper-argument/scripts/json-schema.test.mjs skills/build-paper-argument/scripts/paper-argument.test.mjs skills/write-paper/scripts/paper.test.mjs
 ```
+
+### 许可
+
+[CC BY-NC-SA 4.0](LICENSE)：可以分享和改编本作品，但须署名、不得用于商业目的，并以相同许可发布。
